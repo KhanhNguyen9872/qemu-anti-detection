@@ -39,7 +39,7 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -netdev user,id=net0 \
   -device e1000e,netdev=net0,mac=00:1b:21:7c:4e:2a \
   -device qemu-xhci,id=xhci \
-  -device usb-mouse,bus=xhci.0 \
+  -device usb-tablet,bus=xhci.0 \
   -device usb-kbd,bus=xhci.0 \
   -audiodev pa,id=snd0 \
   -device ich9-intel-hda \

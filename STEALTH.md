@@ -88,7 +88,7 @@ The resulting `OVMF_CODE.fd` / `OVMF_VARS.fd` are in
 
 ## Launch
 
-See the companion scripts in the VM directory (`start-win10-stealth.sh`).
+See the companion script [`vm/start-win10-stealth.sh`](vm/start-win10-stealth.sh).
 The profile uses `-machine q35,smm=on,smbios-entry-point-type=64`,
 `-cpu host,...,hypervisor=off,kvm=off`, the patched OVMF, and the SMBIOS
 overrides listed in `STEALTH.md`/the script.

@@ -1,5 +1,5 @@
-49e0738d0b918d4298727b25fe2d0eb21e524a3b60f07f886bf8e1e02bb1f134  qemu-10.2.2-stealth-source.tar.xz
-36e4da8c052f405f581cf77dd2569e1003dd72ce7423df4b93556b2ea0d90eca  qemu-10.2.2.patch
+a0aa7e174dd997f95f61b07cadf2f014f07ffbdbf7549a43bdf4a0158052decb  qemu-10.2.2-stealth-source.tar.xz
+5910666c514a77b9d01b55cc93d50389972dc5a6e359f4336e7bdfec05517e65  qemu-10.2.2.patch
 b82fda88830910f6b09655e9ad81b61d0027438fd9316ee54a9d371cbcd70328  ovmf-stealth.patch
 d9bdc8135a401f498fb8d19fdbadaea9762d942767aef1acfbf25df4d8a1fe76  OVMF_CODE_stealth.fd
 5d2ac383371b408398accee7ec27c8c09ea5b74a0de0ceea6513388b15be5d1e  OVMF_VARS_stealth.fd

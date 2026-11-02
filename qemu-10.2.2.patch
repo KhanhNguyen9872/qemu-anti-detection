@@ -1999,6 +1999,25 @@ diff -ruN a/target/i386/kvm/kvm.c b/target/i386/kvm/kvm.c
          c = &cpuid_data.entries[cpuid_i++];
          c->function = KVM_CPUID_SIGNATURE | kvm_base;
          c->eax = KVM_CPUID_FEATURES | kvm_base;
+@@ -3390,6 +3390,18 @@
+         }
+     }
+ 
++    /*
++     * Disable KVM's hypercall instruction fixup quirk.  The quirk rewrites
++     * guest vmcall/vmmcall bytes in place; on a read-only kernel page that
++     * write faults and Windows bugchecks with 0xBE.  Real hardware raises
++     * #UD for the wrong hypercall opcode instead.
++     */
++    if (kvm_vm_check_extension(s, KVM_CAP_DISABLE_QUIRKS2) &&
++        kvm_vm_enable_cap(s, KVM_CAP_DISABLE_QUIRKS2, 0,
++                          KVM_X86_QUIRK_FIX_HYPERCALL_INSN)) {
++        warn_report("kvm: failed to disable hypercall quirk");
++    }
++
+     return 0;
+ }
+ 
 diff -ruN a/target/s390x/tcg/misc_helper.c b/target/s390x/tcg/misc_helper.c
 --- a/target/s390x/tcg/misc_helper.c
 +++ b/target/s390x/tcg/misc_helper.c

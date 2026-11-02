@@ -1,0 +1,73 @@
+diff --git a/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h b/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h
+index f8e2b4f..f61d262 100644
+--- a/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h
++++ b/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h
+@@ -19,7 +19,7 @@
+ //
+ // Host Bridge Device ID (DID) value for Q35/MCH
+ //
+-#define INTEL_Q35_MCH_DEVICE_ID  0x29C0
++#define INTEL_Q35_MCH_DEVICE_ID  0x14E8
+ 
+ //
+ // B/D/F/Type: 0/0/0/PCI
+diff --git a/OvmfPkg/OvmfPkgX64.dsc b/OvmfPkg/OvmfPkgX64.dsc
+index 9b865a5..4b54015 100644
+--- a/OvmfPkg/OvmfPkgX64.dsc
++++ b/OvmfPkg/OvmfPkgX64.dsc
+@@ -940,7 +940,7 @@
+     <LibraryClasses>
+       XenPlatformLib|OvmfPkg/Library/XenPlatformLib/XenPlatformLib.inf
+   }
+-  MdeModulePkg/Logo/LogoDxe.inf
++# Logo removed for stealth
+   MdeModulePkg/Application/UiApp/UiApp.inf {
+     <LibraryClasses>
+       NULL|MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf
+@@ -1025,7 +1025,7 @@
+ !if $(STANDALONE_MM_ENABLE) != TRUE
+   MdeModulePkg/Universal/Acpi/BootScriptExecutorDxe/BootScriptExecutorDxe.inf
+ !endif
+-  MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
++# BGRT removed for stealth
+   OvmfPkg/WsmtDxe/WsmtDxe.inf
+ 
+   #
+diff --git a/OvmfPkg/OvmfPkgX64.fdf b/OvmfPkg/OvmfPkgX64.fdf
+index dd42cf0..c18a3ae 100644
+--- a/OvmfPkg/OvmfPkgX64.fdf
++++ b/OvmfPkg/OvmfPkgX64.fdf
+@@ -265,13 +265,13 @@ INF  OvmfPkg/AcpiPlatformDxe/AcpiPlatformDxe.inf
+ !if $(STANDALONE_MM_ENABLE) != TRUE
+ INF  MdeModulePkg/Universal/Acpi/BootScriptExecutorDxe/BootScriptExecutorDxe.inf
+ !endif
+-INF  MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
++# BGRT removed for stealth
+ 
+ INF  FatPkg/EnhancedFatDxe/Fat.inf
+ INF  MdeModulePkg/Universal/Disk/UdfDxe/UdfDxe.inf
+ INF  OvmfPkg/VirtioFsDxe/VirtioFsDxe.inf
+ 
+-INF MdeModulePkg/Logo/LogoDxe.inf
++# Logo removed for stealth
+ 
+ INF OvmfPkg/TdxDxe/TdxDxe.inf
+ 
+diff --git a/OvmfPkg/QemuVideoDxe/Driver.c b/OvmfPkg/QemuVideoDxe/Driver.c
+index 6feca83..623e07e 100644
+--- a/OvmfPkg/QemuVideoDxe/Driver.c
++++ b/OvmfPkg/QemuVideoDxe/Driver.c
+@@ -41,10 +41,10 @@ QEMU_VIDEO_CARD  gQemuVideoCardList[] = {
+     L"Cirrus 5446"
+   },{
+     PCI_CLASS_DISPLAY_VGA,
+-    0x1234,
+-    0x1111,
++    0x1002,
++    0x1900,
+     QEMU_VIDEO_BOCHS_MMIO,
+-    L"QEMU Standard VGA"
++    L"AMD Radeon 780M"
+   },{
+     PCI_CLASS_DISPLAY_OTHER,
+     0x1234,

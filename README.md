@@ -155,3 +155,29 @@ Insert YOUR virtual machine's uuid.
 </domain>
 ```
 ![Screenshot_20220819_230305](https://user-images.githubusercontent.com/63996691/185649897-b7609626-ee6d-42b1-bc5e-4465cb41a19a.png)
+
+---
+
+## Stealth fork: QEMU 10.2.2 "GEEKOM A8 / Ryzen 7 8845HS" profile
+
+This fork adds a complete, buildable patched QEMU 10.2.2 tree and a stronger
+anti-detection profile on top of the original patch:
+
+- **Patched QEMU 10.2.2 source** — download the `qemu-10.2.2-stealth-source.tar.xz` asset from the [v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth).
+- `qemu-10.2.2.patch` — full patch against a vanilla QEMU 10.2.2 tarball.
+- `ovmf-stealth.patch` + `firmware/` — patched OVMF for the AMD host bridge,
+  AMD VGA ID, and no TianoCore BGRT/logo.
+- [`STEALTH.md`](STEALTH.md) — what was changed and how to build/verify.
+- [`GPU-PASSTHROUGH.md`](GPU-PASSTHROUGH.md) — why `virtio-gpu` cannot run the
+  real AMD driver and how VFIO passthrough works.
+
+### Tóm tắt tiếng Việt
+
+- Source QEMU 10.2.2 đã patch đầy đủ nằm trong asset `qemu-10.2.2-stealth-source.tar.xz` của release `v10.2.2-stealth`.
+- File `qemu-10.2.2.patch` áp dụng trực tiếp lên QEMU 10.2.2 gốc.
+- OVMF cần patch riêng (`ovmf-stealth.patch`) vì QEMU đổi host bridge/VGA ID;
+  bản build sẵn nằm trong `firmware/`.
+- Hồ sơ giả lập: GEEKOM A8, Ryzen 7 8845HS, SMBIOS/ACPI/PCI/USB/EDID/ổ đĩa
+  đều được đổi sang thiết bị thật; CPUID ẩn KVM/hypervisor.
+- **GPU**: `virtio-gpu` không chạy được driver AMD thật. Muốn có GPU thật phải
+  passthrough VFIO một GPU rời; xem `GPU-PASSTHROUGH.md`.

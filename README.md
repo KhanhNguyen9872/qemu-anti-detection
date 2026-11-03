@@ -170,6 +170,12 @@ anti-detection profile on top of the original patch:
 - [`STEALTH.md`](STEALTH.md) — what was changed and how to build/verify.
 - [`GPU-PASSTHROUGH.md`](GPU-PASSTHROUGH.md) — why `virtio-gpu` cannot run the
   real AMD driver and how VFIO passthrough works.
+- Sensors: 2 fans, 5 voltage probes, 4 temperature probes, 2 current probes and
+  four ACPI thermal zones (`TZ00`-`TZ03` for CPU/GPU/SSD/system).
+- Storage: Samsung SSD 870 EVO is exposed as a non-rotating SATA SSD
+  (`Get-PhysicalDisk.MediaType = SSD`).
+- Display: ASUS VA24EHE EDID with a 50-240 Hz range; `REFRESH` selects the
+  preferred timing (default 144 Hz). Actual >64 Hz needs VFIO GPU passthrough.
 
 ### Tóm tắt tiếng Việt
 
@@ -179,5 +185,10 @@ anti-detection profile on top of the original patch:
   bản build sẵn nằm trong `firmware/`.
 - Hồ sơ giả lập: GEEKOM A8, Ryzen 7 8845HS, SMBIOS/ACPI/PCI/USB/EDID/ổ đĩa
   đều được đổi sang thiết bị thật; CPUID ẩn KVM/hypervisor.
+- Cảm biến: 2 fan, 5 voltage probe, 4 temperature probe, 2 current probe và
+  4 thermal zone ACPI (`TZ00`-`TZ03`) cho CPU/GPU/SSD/system.
+- Ổ Samsung 870 EVO hiện là SSD không quay (`MediaType = SSD`).
+- EDID ASUS VA24EHE dải 50-240 Hz; biến `REFRESH` chọn timing ưu tiên
+  (mặc định 144 Hz). Muốn >64 Hz thực tế cần passthrough GPU.
 - **GPU**: `virtio-gpu` không chạy được driver AMD thật. Muốn có GPU thật phải
   passthrough VFIO một GPU rời; xem `GPU-PASSTHROUGH.md`.

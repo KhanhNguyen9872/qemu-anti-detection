@@ -15,10 +15,11 @@ OVMF_CODE="${OVMF_CODE:-$DIR/../firmware/OVMF_CODE_stealth.fd}"
 DISK="${DISK:-$DIR/win10.qcow2}"
 VARS="${VARS:-$DIR/win10_VARS.fd}"
 SMB_DIR="${SMB_DIR:-$DIR/share}"
+REFRESH="${REFRESH:-144}"
 mkdir -p "$SMB_DIR"
 
 for f in "$QEMU_BIN" "$OVMF_CODE" "$DISK" "$VARS"; do
-    [ -e "$f" ] || { echo "Missing: $f" >&2; exit 1; }
+    [ -e "$f" ] || { echo "[!] Missing: $f" >&2; exit 1; }
 done
 
 exec "$QEMU_BIN" \
@@ -35,8 +36,8 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -rtc base=localtime,clock=host \
   -drive if=pflash,format=raw,readonly=on,file="$OVMF_CODE" \
   -drive if=pflash,format=raw,file="$VARS" \
-  -drive file="$DISK",if=none,id=disk0,format=qcow2 \
-  -device "ide-hd,drive=disk0,bus=ide.0,serial=S6PNNJ0T8123456,model=Samsung SSD 870 EVO 250GB" \
+  -drive file="$DISK",if=none,id=disk0,format=qcow2,cache=writeback \
+  -device "ide-hd,drive=disk0,bus=ide.0,rotation_rate=1,serial=S6PNNJ0T8123456,model=Samsung SSD 870 EVO 250GB" \
   -boot order=c \
   -netdev user,id=net0,smb="$SMB_DIR" \
   -device e1000e,netdev=net0,mac=00:1b:21:7c:4e:2a \
@@ -46,7 +47,7 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -audiodev pa,id=snd0 \
   -device ich9-intel-hda \
   -device hda-duplex,audiodev=snd0 \
-  -device VGA,vgamem_mb=64 \
+  -device VGA,vgamem_mb=64,refresh_rate=$((REFRESH * 1000)) \
   -parallel none -serial none \
   -global ICH9-LPC.acpi-pci-hotplug-with-bridge-support=off \
   -smbios "type=0,vendor=American Megatrends Inc.,version=SER8V1.0,date=03/15/2024,release=1.0,uefi=on" \
@@ -54,6 +55,9 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -smbios "type=2,manufacturer=GEEKOM,product=A8,version=V1.0,serial=A8H4845S2601001,asset=Default string" \
   -smbios "type=3,manufacturer=GEEKOM,version=V1.0,serial=A8H4845S2601001,asset=Default string,sku=A8-8845HS" \
   -smbios "type=4,sock_pfx=FP8,manufacturer=Advanced Micro Devices,version=AMD Ryzen 7 8845HS w/ Radeon 780M Graphics,max-speed=5100,current-speed=3800,part=100-000001278,processor-family=107" \
+  -smbios "type=11,value=GEEKOM" \
+  -smbios "type=11,value=SER8" \
+  -smbios "type=11,value=Default string" \
   -smbios "type=17,loc_pfx=SODIMM,bank=BANK0,manufacturer=Samsung,serial=S0A1B2C3D4,asset=Default string,part=M425R1GB4BB0-CQKOL,speed=5600" \
   -name "Windows 10 Pro" \
-  -display gtk
+  -display gtk,gl=on

@@ -12,12 +12,29 @@
    ./start-win10-stealth.sh
    ```
 
+If Windows reports `0xc0000225` after moving or resizing the disk, the OVMF
+NVRAM entry is stale. Choose the raw `UEFI Samsung SSD 870 EVO ...` entry in
+the firmware boot menu once, then repair the default entry from an elevated
+Windows prompt:
+```powershell
+mountvol S: /S
+bcdboot C:\Windows /s S: /f UEFI
+```
+
 The script uses `/usr/local/bin/qemu-system-x86_64` by default; override with
 `QEMU_BIN=/path/to/qemu-system-x86_64`.
 
 The guest profile is GEEKOM A8 / Ryzen 7 8845HS, 8 vCPU (8C/8T), 8 GiB RAM,
-Samsung SSD 870 EVO 250 GB on AMD FCH AHCI, Intel 82574L NIC, Realtek ALC897
-audio, AMD Phoenix xHCI, 1920x1080 ASUS VA24EHE EDID.
+Samsung SSD 870 EVO 250 GB on AMD FCH AHCI (`MediaType = SSD`), Intel 82574L
+NIC, Realtek ALC897 audio, AMD Phoenix xHCI, 1920x1080 ASUS VA24EHE EDID.
+
+EDID advertises a 50-240 Hz range; set the preferred timing with
+`REFRESH=144 ./start-win10-stealth.sh`. Windows Basic Display Adapter does not
+enumerate EDID modes, so it still runs at 64 Hz; a real 144 Hz mode needs VFIO
+GPU passthrough (see `../STEALTH.md`).
+
+The guest exposes 4 ACPI thermal zones (`TZ00`-`TZ03`), 2 fans, 5 voltage
+probes, 4 temperature probes and 2 current probes through SMBIOS/ACPI.
 
 ## Shared folder (SMB)
 

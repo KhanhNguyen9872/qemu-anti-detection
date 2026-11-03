@@ -41,7 +41,16 @@ described below.
   FCH SMBus 1022:790b, HD Audio 1022:15e3, xHCI 1022:15b9,
   VGA 1002:1900; AMD/Intel subsystem IDs.
 - VGA/EDID: ASPEED-style default replaced with an ASUS VA24EHE 1920x1080
-  EDID and real manufacturer/product/serial/week/year.
+  EDID and real manufacturer/product/serial/week/year. The EDID range is
+  50-240 Hz and the preferred timing follows the `REFRESH` environment
+  variable (default 144 Hz).
+- Sensors: SMBIOS type 26 (5 voltage probes), type 27 (2 fans), type 28
+  (4 temperature probes) and type 29 (2 current probes), all with status OK.
+  The ACPI DSDT also exposes four thermal zones, `TZ00`-`TZ03`
+  (CPU/GPU/SSD/system), through `MSAcpi_ThermalZoneTemperature`.
+- Storage: IDE identify word 217 is set to 1 (non-rotating), so Windows
+  `Get-PhysicalDisk` reports `MediaType = SSD`, `BusType = SATA`, model
+  `Samsung SSD 870 EVO 250GB` and serial `S6PNNJ0T8123456`.
 - USB HID: Logitech K120 keyboard (046d:c31c) and Logitech M105 mouse
   (046d:c077); Wacom Intuos S tablet IDs for `usb-tablet`.
 - IDE: Samsung SSD model/serial and firmware revision `SVT02B6Q` instead of
@@ -93,6 +102,24 @@ The profile uses `-machine q35,smm=on,smbios-entry-point-type=64`,
 `-cpu host,...,hypervisor=off,kvm=off`, the patched OVMF, and the SMBIOS
 overrides listed in `STEALTH.md`/the script.
 
+Set the preferred EDID refresh with `REFRESH=144 ./start-win10-stealth.sh`
+(the value is milliseconds in QEMU's EDID property: `refresh_rate=Hz * 1000`).
+
+### If Windows stops at 0xc0000225
+
+This error is usually a stale OVMF NVRAM boot entry, not a broken disk. At the
+firmware boot menu select the raw `UEFI Samsung SSD 870 EVO ...` entry once;
+Windows then boots. To repair the default entry permanently, mount the ESP in
+an elevated prompt and rebuild it:
+
+```powershell
+mountvol S: /S
+bcdboot C:\Windows /s S: /f UEFI
+```
+
+Alternatively recreate `win10_VARS.fd` from
+`firmware/OVMF_VARS_stealth.fd` and add the entry with `bcfg`/`bcdboot`.
+
 ## Verification
 
 - `info pci` shows 1022:14e8 / 1022:790e / 1022:7901 / 1022:790b /
@@ -100,8 +127,17 @@ overrides listed in `STEALTH.md`/the script.
 - Guest `Win32_BIOS` should read "American Megatrends Inc." and
   "SER8V1.0"; `Win32_ComputerSystem` should read "GEEKOM A8".
 - CPUID leaves 0x40000000..0x40000010 are zero.
-- `Win32_CacheMemory`, `Win32_Fan`, `Win32_TemperatureProbe`,
-  `Win32_VoltageProbe` return instances (SMBIOS 7/27/28/29).
+- Task Manager on the installed guest: 8 cores / 8 logical processors,
+  8.0 GB RAM, `Virtualization: Enabled`, and **no "Virtual machine" row**.
+  `Win32_ComputerSystem.HypervisorPresent` is `False`.
+- `Get-PhysicalDisk` reports `MediaType = SSD`, `BusType = SATA`,
+  `FriendlyName = Samsung SSD 870 EVO 250GB`.
+- `Win32_Fan` returns 2 instances, `Win32_TemperatureProbe` 4,
+  `Win32_VoltageProbe` 5 and `Win32_CurrentProbe` 2, all `Status = OK`.
+- Elevated `Get-CimInstance -Namespace root/wmi -ClassName
+  MSAcpi_ThermalZoneTemperature` returns four zones:
+  `TZ00` 3182, `TZ01` 3232, `TZ02` 3132, `TZ03` 3082 (tenths of Kelvin).
+- `Win32_CacheMemory` and the SMBIOS type 7/26-29 tables are present.
 - Old hardware ghost devices must be removed after switching an existing
   Windows installation (see `STEALTH.md`).
 
@@ -110,3 +146,11 @@ overrides listed in `STEALTH.md`/the script.
 `virtio-gpu` is not a real GPU and cannot run the AMD driver. See
 [GPU-PASSTHROUGH.md](GPU-PASSTHROUGH.md) for the only real solution
 (VFIO passthrough) and the trade-offs.
+
+The QEMU `VGA` device is spoofed as `1002:1900`, and its EDID advertises
+1920x1080 at up to 240 Hz. Windows 10 installs the inbox **Microsoft Basic
+Display Adapter**, which does not enumerate the EDID modes; `dxdiag` therefore
+shows 64 Hz and `Win32_VideoController.CurrentRefreshRate` reports 1. The
+EDID/`REFRESH` setting is ready for a real GPU driver, but getting an actual
+144 Hz mode requires VFIO passthrough of a real AMD GPU (or a VM-specific
+driver, which weakens the anti-detection profile).

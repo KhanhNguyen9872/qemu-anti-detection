@@ -53,3 +53,21 @@ host. Override the exported directory with `SMB_DIR=/path/to/share`.
 
 QEMU's user-mode SMB server is reachable at `10.0.2.4`; the share name is
 `qemu`.
+
+
+## Guest anti-detection cleanup
+
+The Windows installation keeps PnP records from earlier QXL/VirtIO/Hyper-V
+test profiles. Run these from an **elevated PowerShell** in the guest:
+
+```powershell
+# read-only audit
+powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\audit-guest.ps1
+
+# remove Kernel Debug NIC, non-present ghosts, and stale PS/2 devices
+powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\clean-guest.ps1
+```
+
+Reboot after cleanup. The Intel 82574L is a real Intel NIC; its `#2` suffix is
+a re-enumeration artifact, not a QEMU device. QEMU does not emulate a
+Realtek 2.5GbE/I225-V, so a matching NIC name requires PCI passthrough.

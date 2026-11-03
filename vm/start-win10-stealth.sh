@@ -24,7 +24,7 @@ done
 
 exec "$QEMU_BIN" \
   -enable-kvm \
-  -machine q35,smm=on,smbios-entry-point-type=64,i8042=off \
+  -machine q35,smm=on,smbios-entry-point-type=64,i8042=off,vmport=off \
   -cpu host,topoext=on,hypervisor=off,kvm=off,\
 -kvmclock,-kvm-nopiodelay,-kvm-mmu,-kvm-asyncpf,-kvm-steal-time,\
 -kvm-pv-eoi,-kvm-pv-unhalt,-kvm-pv-tlb-flush,-kvm-asyncpf-vmexit,\

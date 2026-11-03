@@ -37,6 +37,8 @@ described below.
 - CPUID: KVM paravirt leaves hidden (`kvm=off`), hypervisor bit cleared,
   all `kvm-*` paravirt features disabled, Hyper-V enlightenments disabled,
   brand string "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics".
+- Machine: `vmport=off` disables the VMware backdoor I/O port emulation;
+  `i8042=off` removes the PS/2 controller from the machine.
 - PCI: Q35 host bridge 1022:14e8, FCH LPC 1022:790e, FCH SATA 1022:7901,
   FCH SMBus 1022:790b, HD Audio 1022:15e3, xHCI 1022:15b9,
   VGA 1002:1900; AMD/Intel subsystem IDs.
@@ -100,7 +102,7 @@ The resulting `OVMF_CODE.fd` / `OVMF_VARS.fd` are in
 ## Launch
 
 See the companion script [`vm/start-win10-stealth.sh`](vm/start-win10-stealth.sh).
-The profile uses `-machine q35,smm=on,smbios-entry-point-type=64`,
+The profile uses `-machine q35,smm=on,smbios-entry-point-type=64,vmport=off`,
 `-cpu host,...,hypervisor=off,kvm=off`, the patched OVMF, and the SMBIOS
 overrides listed in `STEALTH.md`/the script.
 

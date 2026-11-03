@@ -1,0 +1,24 @@
+Anti-detection guest cleanup
+=============================
+
+Run these from an elevated PowerShell inside the Windows guest.
+
+1) Read-only audit (recommended first)
+   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\audit-guest.ps1
+   Result: C:\pnp-audit.txt and \\10.0.2.4\qemu\pnp-audit.txt
+
+2) Remove kernel-debug NIC, ghost devices, and stale PS/2 devices
+   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\clean-guest.ps1
+   Result: C:\clean-guest.log and \\10.0.2.4\qemu\clean-guest.log
+   Reboot the VM afterwards.
+
+Notes
+- The Intel 82574L is a real Intel NIC, not a QEMU-specific device. The "#2"
+  suffix is a re-enumeration artifact; removing ghosts and rebooting usually
+  clears it. Renaming it to a different model while keeping the 82574L PCI ID
+  would be inconsistent and easier to detect.
+- There is no QEMU emulation for a Realtek 2.5GbE / Intel I225-V. A matching
+  device name requires PCI passthrough of a real NIC.
+- Microsoft Basic Display Adapter + Generic Non-PnP Monitor remain because
+  Windows has no real AMD GPU driver for the emulated 1002:1900 VGA. Real
+  Radeon 780M identity and >64 Hz need VFIO GPU passthrough.

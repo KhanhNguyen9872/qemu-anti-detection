@@ -14,6 +14,8 @@ QEMU_BIN="${QEMU_BIN:-/usr/local/bin/qemu-system-x86_64}"
 OVMF_CODE="${OVMF_CODE:-$DIR/../firmware/OVMF_CODE_stealth.fd}"
 DISK="${DISK:-$DIR/win10.qcow2}"
 VARS="${VARS:-$DIR/win10_VARS.fd}"
+SMB_DIR="${SMB_DIR:-$DIR/share}"
+mkdir -p "$SMB_DIR"
 
 for f in "$QEMU_BIN" "$OVMF_CODE" "$DISK" "$VARS"; do
     [ -e "$f" ] || { echo "Missing: $f" >&2; exit 1; }
@@ -36,7 +38,7 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -drive file="$DISK",if=none,id=disk0,format=qcow2 \
   -device "ide-hd,drive=disk0,bus=ide.0,serial=S6PNNJ0T8123456,model=Samsung SSD 870 EVO 250GB" \
   -boot order=c \
-  -netdev user,id=net0 \
+  -netdev user,id=net0,smb="$SMB_DIR" \
   -device e1000e,netdev=net0,mac=00:1b:21:7c:4e:2a \
   -device qemu-xhci,id=xhci \
   -device usb-tablet,bus=xhci.0 \

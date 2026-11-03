@@ -18,3 +18,21 @@ The script uses `/usr/local/bin/qemu-system-x86_64` by default; override with
 The guest profile is GEEKOM A8 / Ryzen 7 8845HS, 8 vCPU (8C/8T), 8 GiB RAM,
 Samsung SSD 870 EVO 250 GB on AMD FCH AHCI, Intel 82574L NIC, Realtek ALC897
 audio, AMD Phoenix xHCI, 1920x1080 ASUS VA24EHE EDID.
+
+## Shared folder (SMB)
+
+The launch scripts export `$DIR/share` to the guest through QEMU user-mode
+SMB. QEMU must be built with `--smbd=/usr/sbin/smbd` (or another path to the
+Samba `smbd` binary).
+
+In Windows, map it once:
+
+```powershell
+net use Z: \\10.0.2.4\qemu /persistent:yes
+```
+
+Files are then available under `Z:\` and in `/home/<user>/vms/share` on the
+host. Override the exported directory with `SMB_DIR=/path/to/share`.
+
+QEMU's user-mode SMB server is reachable at `10.0.2.4`; the share name is
+`qemu`.

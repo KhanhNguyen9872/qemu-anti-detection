@@ -20,7 +20,7 @@ described below.
 | Memory | 1x 8 GiB Samsung DDR5-5600 SODIMM |
 | Storage | Samsung SSD 870 EVO 250 GB on AMD FCH SATA (1022:7901) |
 | Network | Intel 82574L (8086:10d3), Intel OUI MAC |
-| USB | AMD Phoenix xHCI (1022:15b9), Logitech keyboard/mouse |
+| USB | 2x AMD Phoenix xHCI (1022:15b9), Logitech keyboard/mouse |
 | Audio | AMD HD Audio (1022:15e3) + Realtek ALC897 codec (10ec:0897) |
 | GPU | Radeon 780M PCI ID (1002:1900) — see the GPU limitation below |
 | Monitor | ASUS VA24EHE EDID, 1920x1080 |
@@ -51,8 +51,10 @@ described below.
 - Storage: IDE identify word 217 is set to 1 (non-rotating), so Windows
   `Get-PhysicalDisk` reports `MediaType = SSD`, `BusType = SATA`, model
   `Samsung SSD 870 EVO 250GB` and serial `S6PNNJ0T8123456`.
-- USB HID: Logitech K120 keyboard (046d:c31c) and Logitech M105 mouse
-  (046d:c077); Wacom Intuos S tablet IDs for `usb-tablet`.
+- USB: two AMD Phoenix xHCI controllers (1022:15b9), each with its own root
+  hub, so Device Manager shows a CPU xHCI and a chipset xHCI instead of a
+  single controller. HID: Logitech K120 keyboard (046d:c31c) and Logitech M105
+  mouse (046d:c077); Wacom Intuos S tablet IDs for `usb-tablet`.
 - IDE: Samsung SSD model/serial and firmware revision `SVT02B6Q` instead of
   `QEMU HARDDISK` / `2.5+`; ASUS DVD-ROM model.
 - NVMe: Samsung 990 PRO model/firmware/PCI ID (not used by the installed

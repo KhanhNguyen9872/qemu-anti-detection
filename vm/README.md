@@ -26,7 +26,7 @@ The script uses `/usr/local/bin/qemu-system-x86_64` by default; override with
 
 The guest profile is GEEKOM A8 / Ryzen 7 8845HS, 8 vCPU (8C/8T), 8 GiB RAM,
 Samsung SSD 870 EVO 250 GB on AMD FCH AHCI (`MediaType = SSD`), Intel 82574L
-NIC, Realtek ALC897 audio, AMD Phoenix xHCI, 1920x1080 ASUS VA24EHE EDID.
+NIC, Realtek ALC897 audio, dual AMD Phoenix xHCI controllers, 1920x1080 ASUS VA24EHE EDID.
 
 EDID advertises a 50-240 Hz range; set the preferred timing with
 `REFRESH=144 ./start-win10-stealth.sh`. Windows Basic Display Adapter does not

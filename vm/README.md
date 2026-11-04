@@ -152,7 +152,9 @@ host. If the drive does not reconnect after a reboot, run
 folder). Override the exported directory with `SMB_DIR=/path/to/share`.
 
 QEMU's user-mode SMB server is reachable at `10.0.2.4`; the share name is
-`qemu`.
+`qemu`. The host launcher only exposes the share; it cannot create a Windows
+drive by itself. Run `\\10.0.2.4\qemu\map-qemu-share.bat` once, or copy it
+to the Startup folder, then open `This PC` and use `Z:`.
 
 
 ## Guest anti-detection cleanup

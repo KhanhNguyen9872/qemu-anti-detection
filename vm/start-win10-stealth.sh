@@ -30,11 +30,14 @@ if [ -z "${CPU_MODEL:-}" ]; then
         portable)
             CPU_MODEL="EPYC-Rome,family=25,model=117,stepping=2"
             ;;
+        compat)
+            CPU_MODEL="qemu64,family=25,model=117,stepping=2"
+            ;;
         native)
             CPU_MODEL="host"
             ;;
         *)
-            echo "[!] Invalid CPU_MODE: $CPU_MODE (use auto, portable, native)" >&2
+            echo "[!] Invalid CPU_MODE: $CPU_MODE (use auto, portable, compat, native)" >&2
             exit 1
             ;;
     esac

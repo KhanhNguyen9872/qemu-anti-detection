@@ -62,6 +62,8 @@ Options:
 - `CPU_MODE=auto` (default) — Genoa on AMD, Rome on Intel.
 - `CPU_MODE=portable` — EPYC-Rome on both; best cross-vendor KVM
   compatibility, tested on the AMD host.
+- `CPU_MODE=compat` — `qemu64,family=25,model=117,stepping=2`; oldest
+  baseline, last-resort for hosts where Rome still fails under KVM.
 - `CPU_MODE=native` — `-cpu host`; only for a known 8845H/8845HS host.
 - `CPU_MODEL='...'` — direct QEMU CPU model override.
 - `SMP='4,sockets=1,cores=4,threads=2'` — 4C/8T; default is 8C/8T.

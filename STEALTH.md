@@ -14,7 +14,7 @@ described below.
 | Item | Value |
 |---|---|
 | System | GEEKOM A8 mini PC |
-| CPU | fixed AMD EPYC-Genoa CPUID + 8845HS brand, 8C/8T (not host passthrough) |
+| CPU | fixed AMD CPUID + 8845HS brand; Genoa on AMD, Rome on Intel; 8C/8T |
 | BIOS | American Megatrends Inc. SER8V1.0, 03/15/2024 |
 | Board / chassis | GEEKOM A8, mini-PC chassis (SMBIOS type 3 = 0x23) |
 | Memory | 1x 8 GiB Samsung DDR5-5600 SODIMM |
@@ -35,11 +35,15 @@ described below.
   WAET/BGRT/QEMU fw_cfg node removed, static processor objects (no
   `ACPI0010` container or CPU-hotplug `PRES` device), DSDT revision 2,
   parallel/serial ports disabled by the launch profile.
-- CPUID: fixed `EPYC-Genoa,family=25,model=117,stepping=2` CPU model with
-  brand string "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics"; the default is
+- CPUID: fixed AMD CPU model with brand string
+  "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics"; `CPU_MODE=auto` chooses
+  `EPYC-Genoa,family=25,model=117,stepping=2` on AMD and
+  `EPYC-Rome,family=25,model=117,stepping=2` on Intel. The default is
   **not** `-cpu host`, so the host CPUID vendor/model is not leaked. KVM
   paravirt leaves hidden (`kvm=off`), hypervisor bit cleared, all `kvm-*`
-  paravirt features disabled, Hyper-V enlightenments disabled.
+  paravirt features disabled, Hyper-V enlightenments disabled. On Intel,
+  KVM filters AMD-only features; the name/identity stay fixed but the
+  feature set and SVM state can differ.
 - Machine: `vmport=off` disables the VMware backdoor I/O port emulation;
   `i8042=off` removes the PS/2 controller from the machine.
 - Secure Boot/TPM: OVMF is built with `SECURE_BOOT_ENABLE`, `SMM_REQUIRE`

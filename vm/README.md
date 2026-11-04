@@ -48,20 +48,31 @@ The TPM state is kept in `./tpm`; deleting that directory clears the TPM.
 
 ## CPU identity and moving to another host
 
-The default CPU is **not** `-cpu host`. It is a fixed AMD model
-(`EPYC-Genoa,family=25,model=117,stepping=2`) with the 8845HS brand string,
-so a different host does not leak its own CPUID vendor/model into the guest.
+The default is **not** `-cpu host`. The launcher uses `CPU_MODE=auto`:
 
-- `CPU_MODEL` — override the CPU model. `CPU_MODEL=host` is only for a known
-  8845H/8845HS host; it exposes the real host CPUID.
-- `SMP` — CPU topology. Default: `8,sockets=1,cores=8,threads=1` (8C/8T).
-  Examples:
-  ```bash
-  SMP='4,sockets=1,cores=4,threads=2' ./start-win10-stealth.sh  # 4C/8T
-  SMP='2,sockets=1,cores=2,threads=2' ./start-win10-stealth.sh  # 2C/4T
-  ```
-  The CPU brand stays `AMD Ryzen 7 8845HS...`; a lower core count is a
-  deliberate visual choice, not a matching retail SKU.
+- On an **AMD** host: fixed `EPYC-Genoa,family=25,model=117,stepping=2`
+- On an **Intel** or unknown host: fixed `EPYC-Rome,family=25,model=117,stepping=2`
+
+Both use the `AMD Ryzen 7 8845HS w/ Radeon 780M Graphics` brand string, so
+Windows shows the same CPU name and an AuthenticAMD identity regardless of
+the host CPU.
+
+Options:
+
+- `CPU_MODE=auto` (default) — Genoa on AMD, Rome on Intel.
+- `CPU_MODE=portable` — EPYC-Rome on both; best cross-vendor KVM
+  compatibility, tested on the AMD host.
+- `CPU_MODE=native` — `-cpu host`; only for a known 8845H/8845HS host.
+- `CPU_MODEL='...'` — direct QEMU CPU model override.
+- `SMP='4,sockets=1,cores=4,threads=2'` — 4C/8T; default is 8C/8T.
+  `SMP='2,sockets=1,cores=2,threads=2'` gives 2C/4T.
+
+Important limitation: KVM can only expose CPU features the host supports.
+On Intel, QEMU filters AMD-only features such as SVM/AVX-512; the guest still
+has the fixed 8845HS name/CPUID family/model, but its feature set and
+`Virtualization: Enabled/Disabled` state can differ from an AMD host. For
+identical CPU features on Intel and AMD you need TCG (slow) or bare-metal/
+passthrough; a fixed CPU model does not make KVM emulate missing features.
 
 To move the VM to another Linux host, copy:
 

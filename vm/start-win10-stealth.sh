@@ -16,7 +16,29 @@ DISK="${DISK:-$DIR/win10.qcow2}"
 VARS="${VARS:-$DIR/win10_VARS.fd}"
 SMB_DIR="${SMB_DIR:-$DIR/share}"
 REFRESH="${REFRESH:-144}"
-CPU_MODEL="${CPU_MODEL:-EPYC-Genoa,family=25,model=117,stepping=2}"
+CPU_MODE="${CPU_MODE:-auto}"
+HOST_VENDOR=$(awk -F: '/^vendor_id/{gsub(/[ \t]/,"",$2); print $2; exit}' /proc/cpuinfo 2>/dev/null)
+if [ -z "${CPU_MODEL:-}" ]; then
+    case "$CPU_MODE" in
+        auto)
+            if [ "$HOST_VENDOR" = "AuthenticAMD" ]; then
+                CPU_MODEL="EPYC-Genoa,family=25,model=117,stepping=2"
+            else
+                CPU_MODEL="EPYC-Rome,family=25,model=117,stepping=2"
+            fi
+            ;;
+        portable)
+            CPU_MODEL="EPYC-Rome,family=25,model=117,stepping=2"
+            ;;
+        native)
+            CPU_MODEL="host"
+            ;;
+        *)
+            echo "[!] Invalid CPU_MODE: $CPU_MODE (use auto, portable, native)" >&2
+            exit 1
+            ;;
+    esac
+fi
 SMP="${SMP:-8,sockets=1,cores=8,threads=1}"
 mkdir -p "$SMB_DIR"
 

@@ -135,26 +135,26 @@ the ACPI/device profile, so use the same patched 10.2.2 build.
 
 ## Shared folder (SMB)
 
-The launch scripts export `$DIR/share` to the guest through QEMU user-mode
-SMB. QEMU must be built with `--smbd=/usr/sbin/smbd` (or another path to the
-Samba `smbd` binary).
+The launch scripts export `${SMB_DIR:-$HOME/vms/share}` to the guest through
+QEMU user-mode SMB. QEMU must be built with `--smbd=/usr/sbin/smbd` (or
+another path to the Samba `smbd` binary). The launcher also copies
+`map-qemu-share.bat` into that directory if it is missing and prints the
+exact mapping command.
 
-The host script only **exposes** the share; Windows does not auto-map a drive.
-Map it once from a guest command prompt:
+The host only **exposes** the share; Windows does not auto-map a drive on a
+brand-new install. Map it once from a guest command prompt:
 
 ```powershell
 net use Z: \\10.0.2.4\qemu /persistent:yes
 ```
 
-Files are then available under `Z:\` and in `/home/<user>/vms/share` on the
-host. If the drive does not reconnect after a reboot, run
-`\\10.0.2.4\qemu\map-qemu-share.bat` (or copy it into the Windows Startup
-folder). Override the exported directory with `SMB_DIR=/path/to/share`.
+Files are then available under `Z:\` and in `$HOME/vms/share` on the host.
+To make it automatic, run `\\10.0.2.4\qemu\map-qemu-share.bat` once and copy
+it to the Windows Startup folder (`shell:startup`), or run the helper from
+there. The batch retries the mapping three seconds after login, which is
+useful when the QEMU SMB server is not ready immediately.
 
-QEMU's user-mode SMB server is reachable at `10.0.2.4`; the share name is
-`qemu`. The host launcher only exposes the share; it cannot create a Windows
-drive by itself. Run `\\10.0.2.4\qemu\map-qemu-share.bat` once, or copy it
-to the Startup folder, then open `This PC` and use `Z:`.
+Override the exported directory with `SMB_DIR=/path/to/share`.
 
 
 ## Guest anti-detection cleanup

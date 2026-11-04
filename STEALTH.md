@@ -195,6 +195,15 @@ on because it is controlled by the OVMF VARS, not the TPM. TCG is much
 slower; use the default KVM mode for normal work and the TCG mode only
 for SEB.
 
+KVM+TPM=0 was also tested. VMAware still reports `(KVM, 100%)`: the
+`KVM_INTERCEPTION` technique alone scores 150, which is the default
+detection threshold. This is below QEMU: KVM itself handles
+`VMCALL`/`VMMCALL` inside the kernel. No QEMU `-cpu`/`-machine` option
+changes that. To keep KVM speed and hide it, the host KVM module must be
+patched to inject `#UD` for those instructions, or the guest needs a
+user-mode exception shim (fragile with SEB integrity). TCG is the only
+QEMU-build-only path.
+
 The expected remaining score under TCG+TPM=0 is below 150 (GPU 20 plus,
 at worst, TIMER 45 and SVM 35), so SEB's native check should pass. A fresh
 Windows install is strongly recommended: old PnP ghosts, DeviceCache and

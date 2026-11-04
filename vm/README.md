@@ -46,6 +46,43 @@ The launch script starts `swtpm` and adds `-device tpm-crb,tpmdev=tpm0` by
 default. Install `swtpm` first; use `TPM=0` to boot without TPM for debugging.
 The TPM state is kept in `./tpm`; deleting that directory clears the TPM.
 
+## CPU identity and moving to another host
+
+The default CPU is **not** `-cpu host`. It is a fixed AMD model
+(`EPYC-Genoa,family=25,model=117,stepping=2`) with the 8845HS brand string,
+so a different host does not leak its own CPUID vendor/model into the guest.
+
+- `CPU_MODEL` — override the CPU model. `CPU_MODEL=host` is only for a known
+  8845H/8845HS host; it exposes the real host CPUID.
+- `SMP` — CPU topology. Default: `8,sockets=1,cores=8,threads=1` (8C/8T).
+  Examples:
+  ```bash
+  SMP='4,sockets=1,cores=4,threads=2' ./start-win10-stealth.sh  # 4C/8T
+  SMP='2,sockets=1,cores=2,threads=2' ./start-win10-stealth.sh  # 2C/4T
+  ```
+  The CPU brand stays `AMD Ryzen 7 8845HS...`; a lower core count is a
+  deliberate visual choice, not a matching retail SKU.
+
+To move the VM to another Linux host, copy:
+
+```text
+win10.qcow2
+win10_VARS.fd
+OVMF_CODE_stealth.fd
+tpm/                  # keep the same TPM identity
+secureboot/           # optional: local PK/KEK private keys
+start-win10-stealth.sh
+smbd
+share/
+```
+
+Install the patched QEMU 10.2.2 from the release source and `swtpm` on the new
+host. Keep the same disk GUID; the Secure Boot VARS boot entry is tied to the
+disk. The locally built QEMU has `CONFIG_SMBD_COMMAND=/home/khanhnguyen9872/vms/smbd`;
+if the new path differs, rebuild QEMU with `--smbd=/usr/sbin/smbd` or copy
+`smbd` to the expected path. A different QEMU version/machine type can change
+the ACPI/device profile, so use the same patched 10.2.2 build.
+
 ## Shared folder (SMB)
 
 The launch scripts export `$DIR/share` to the guest through QEMU user-mode

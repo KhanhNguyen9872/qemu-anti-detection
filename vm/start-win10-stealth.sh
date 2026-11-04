@@ -16,6 +16,8 @@ DISK="${DISK:-$DIR/win10.qcow2}"
 VARS="${VARS:-$DIR/win10_VARS.fd}"
 SMB_DIR="${SMB_DIR:-$DIR/share}"
 REFRESH="${REFRESH:-144}"
+CPU_MODEL="${CPU_MODEL:-EPYC-Genoa,family=25,model=117,stepping=2}"
+SMP="${SMP:-8,sockets=1,cores=8,threads=1}"
 mkdir -p "$SMB_DIR"
 
 for f in "$QEMU_BIN" "$OVMF_CODE" "$DISK" "$VARS"; do
@@ -47,16 +49,23 @@ if [ "$TPM" = "1" ]; then
     )
 fi
 
+if [ "$CPU_MODEL" = "host" ] && ! grep -qiE 'AMD Ryzen 7 8845H(S)?' /proc/cpuinfo; then
+    echo "[!] Host CPU is not Ryzen 7 8845H/8845HS." >&2
+    echo "    CPUID will not match the GEEKOM A8 profile." >&2
+    echo "    For a portable AMD identity use:" >&2
+    echo "    CPU_MODEL='EPYC-Genoa,family=25,model=117,stepping=2' $0" >&2
+fi
+
 exec "$QEMU_BIN" \
   -enable-kvm \
   -machine q35,smm=on,smbios-entry-point-type=64,i8042=off,vmport=off \
-  -cpu host,topoext=on,hypervisor=off,kvm=off,\
+  -cpu "$CPU_MODEL",topoext=on,hypervisor=off,kvm=off,\
 -kvmclock,-kvm-nopiodelay,-kvm-mmu,-kvm-asyncpf,-kvm-steal-time,\
 -kvm-pv-eoi,-kvm-pv-unhalt,-kvm-pv-tlb-flush,-kvm-asyncpf-vmexit,\
 -kvm-pv-ipi,-kvm-poll-control,-kvm-pv-sched-yield,-kvm-asyncpf-int,\
 -kvm-msi-ext-dest-id,-kvm-hint-dedicated,\
 model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
-  -smp 8,sockets=1,cores=8,threads=1 \
+  -smp "$SMP" \
   -m 8192 \
   -rtc base=localtime,clock=host \
   -drive if=pflash,format=raw,readonly=on,file="$OVMF_CODE" \

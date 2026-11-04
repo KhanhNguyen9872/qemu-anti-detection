@@ -179,6 +179,9 @@ anti-detection profile on top of the original patch:
 - Secure Boot + TPM 2.0: patched OVMF with a GEEKOM PK/KEK and Microsoft
   KEK/db/dbx; TPM 2.0 is provided by `swtpm` and exposed to Windows as
   `Trusted Platform Module 2.0`.
+- Portable CPU identity: fixed AMD EPYC-Genoa CPUID with the 8845HS brand,
+  not `-cpu host`; the same CPUID is exposed on another host. `CPU_MODEL` and
+  `SMP` can override the model/topology.
 
 ### Tóm tắt tiếng Việt
 

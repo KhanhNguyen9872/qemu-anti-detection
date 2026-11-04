@@ -5,6 +5,7 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export ACCEL=tcg
 export TPM=0
+export TB_SIZE="${TB_SIZE:-1024}"
 export DISK="${DISK:-$DIR/win10.qcow2}"
 export VARS="${VARS:-$DIR/win10_VARS.fd}"
 exec "$DIR/start-win10.sh" "$@"

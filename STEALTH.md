@@ -193,7 +193,9 @@ raise `#UD` instead of being intercepted, and the KVM exit-timer check
 disappears. `TPM=0` removes the OVMF measured-boot log. Secure Boot stays
 on because it is controlled by the OVMF VARS, not the TPM. TCG is much
 slower; use the default KVM mode for normal work and the TCG mode only
-for SEB.
+for SEB. `start-seb.sh` sets `TB_SIZE=1024` (1 GiB translation cache); if
+the host has spare RAM, `TB_SIZE=2048 ./start-seb.sh` can reduce translation
+thrashing. This helps but does not make TCG native-speed.
 
 KVM+TPM=0 was also tested. VMAware still reports `(KVM, 100%)`: the
 `KVM_INTERCEPTION` technique alone scores 150, which is the default

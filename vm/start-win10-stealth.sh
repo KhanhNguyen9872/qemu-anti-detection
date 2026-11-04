@@ -105,7 +105,7 @@ if [ "$CPU_MODEL" = "host" ] && ! grep -qiE 'AMD Ryzen 7 8845H(S)?' /proc/cpuinf
 fi
 
 if [ "$ACCEL" = "tcg" ]; then
-    ACCEL_ARGS=(-accel tcg,thread=multi)
+    ACCEL_ARGS=(-accel tcg,thread=multi,tb-size=${TB_SIZE:-1024})
     CPU_EXTRA=",hypervisor=off,-topoext,-amd-stibp,-stibp-always-on,-amd-ssbd,-amd-psfd,-lfence-always-serializing,-auto-ibrs,-nrip-save,-vnmi,-xsavec,-xsaves,-avx512-vpopcntdq,-avx512-bf16,-invpcid,-avx512f,-avx512dq,-avx512ifma,-avx512cd,-avx512bw,-avx512vl,-avx512vbmi,-avx512vbmi2,-avx512vnni,-avx512bitalg,-gfni,-vpclmulqdq,-fxsr-opt,-misalignsse,-osvw,-perfctr-core,-clzero,-ibpb,-ibrs"
 else
     ACCEL_ARGS=(-enable-kvm)

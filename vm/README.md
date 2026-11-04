@@ -68,7 +68,9 @@ Safe Exam Browser (TCG, no TPM to hide the OVMF measured-boot log):
 ```
 
 `ACCEL=tcg` defaults `TPM` to `0`; set `TPM=1` explicitly if you need TPM
-under TCG. TCG is much slower. See `../STEALTH.md#seb--vmaware-profile`.
+under TCG. `TB_SIZE` selects the TCG translation cache in MiB (default 1024;
+2048 can help on a host with spare RAM). TCG is still much slower. See
+`../STEALTH.md#seb--vmaware-profile`.
 
 ## Secure Boot and TPM 2.0
 

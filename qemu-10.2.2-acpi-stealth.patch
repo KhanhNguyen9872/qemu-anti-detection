@@ -1,0 +1,433 @@
+diff -ruN a/hw/acpi/pci.c b/hw/acpi/pci.c
+--- a/hw/acpi/pci.c	2026-11-04 13:11:18.898993885 +0700
++++ b/hw/acpi/pci.c	2026-11-04 13:11:18.923113296 +0700
+@@ -309,7 +309,7 @@
+     Aml *else_ctx;
+     Aml *method;
+     Aml *a_cwd1 = aml_name("CDW1");
+-    Aml *a_ctrl = aml_local(0);
++    Aml *a_ctrl = aml_local(1);
+ 
+     method = aml_method("_OSC", 4, AML_NOTSERIALIZED);
+     aml_append(method, aml_create_dword_field(aml_arg(3), aml_int(0), "CDW1"));
+diff -ruN a/hw/acpi/tpm.c b/hw/acpi/tpm.c
+--- a/hw/acpi/tpm.c	2026-11-04 13:11:18.901161446 +0700
++++ b/hw/acpi/tpm.c	2026-11-04 13:11:18.924996899 +0700
+@@ -35,14 +35,14 @@
+     not_implemented = aml_int(TPM_PPI_FUNC_NOT_IMPLEMENTED);
+ 
+     /*
+-     * TPP2 is for the registers that ACPI code used to pass
++     * TPP6 is for the registers that ACPI code used to pass
+      * the PPI code and parameter (PPRQ, PPRM) to the firmware.
+      */
+     aml_append(dev,
+-               aml_operation_region("TPP2", AML_SYSTEM_MEMORY,
++               aml_operation_region("TPP6", AML_SYSTEM_MEMORY,
+                                     aml_int(TPM_PPI_ADDR_BASE + 0x100),
+                                     0x5A));
+-    field = aml_field("TPP2", AML_ANY_ACC, AML_NOLOCK, AML_PRESERVE);
++    field = aml_field("TPP6", AML_ANY_ACC, AML_NOLOCK, AML_PRESERVE);
+     aml_append(field, aml_named_field("PPIN", 8));
+     aml_append(field, aml_named_field("PPIP", 32));
+     aml_append(field, aml_named_field("PPRP", 32));
+@@ -55,11 +55,11 @@
+ 
+     aml_append(dev,
+                aml_operation_region(
+-                   "TPP3", AML_SYSTEM_MEMORY,
++                   "TPP7", AML_SYSTEM_MEMORY,
+                    aml_int(TPM_PPI_ADDR_BASE +
+                            0x15a /* movv, docs/specs/tpm.rst */),
+                            0x1));
+-    field = aml_field("TPP3", AML_BYTE_ACC, AML_NOLOCK, AML_PRESERVE);
++    field = aml_field("TPP7", AML_BYTE_ACC, AML_NOLOCK, AML_PRESERVE);
+     aml_append(field, aml_named_field("MOVV", 8));
+     aml_append(dev, field);
+ 
+@@ -67,7 +67,7 @@
+      * DerefOf in Windows is broken with SYSTEM_MEMORY.  Use a dynamic
+      * operation region inside of a method for getting FUNC[op].
+      */
+-    method = aml_method("TPFN", 1, AML_SERIALIZED);
++    method = aml_method("TPFQ", 1, AML_SERIALIZED);
+     {
+         Aml *op = aml_arg(0);
+         ifctx = aml_if(aml_lgreater_equal(op, aml_int(0x100)));
+@@ -164,7 +164,7 @@
+ 
+                 /* get opcode flags */
+                 aml_append(ifctx2,
+-                           aml_store(aml_call1("TPFN", op), op_flags));
++                           aml_store(aml_call1("TPFQ", op), op_flags));
+ 
+                 /* if func[opcode] & TPM_PPI_FUNC_NOT_IMPLEMENTED */
+                 ifctx3 = aml_if(
+@@ -325,7 +325,7 @@
+                                              op));
+ 
+                 /* get opcode flags */
+-                aml_append(ifctx2, aml_store(aml_call1("TPFN", op),
++                aml_append(ifctx2, aml_store(aml_call1("TPFQ", op),
+                                              op_flags));
+                 /* if func[opcode] & TPM_PPI_FUNC_NOT_IMPLEMENTED */
+                 ifctx3 = aml_if(
+@@ -397,7 +397,7 @@
+                                      op));
+ 
+                 /* get opcode flags */
+-                aml_append(ifctx2, aml_store(aml_call1("TPFN", op),
++                aml_append(ifctx2, aml_store(aml_call1("TPFQ", op),
+                                              op_flags));
+                 /* return confirmation status code */
+                 aml_append(ifctx2,
+diff -ruN a/hw/i2c/smbus_ich9.c b/hw/i2c/smbus_ich9.c
+--- a/hw/i2c/smbus_ich9.c	2026-11-04 13:11:18.909020514 +0700
++++ b/hw/i2c/smbus_ich9.c	2026-11-04 13:11:18.930457450 +0700
+@@ -124,10 +124,10 @@
+     PCIDeviceClass *k = PCI_DEVICE_CLASS(klass);
+     AcpiDevAmlIfClass *adevc = ACPI_DEV_AML_IF_CLASS(klass);
+ 
+-    k->vendor_id = 0x1022; /* AMD/ATI FCH */
++    k->vendor_id = 0x1002; /* AMD/ATI FCH */
+     k->device_id = 0x790b; /* FCH SMBus Controller */
+     k->revision = 0x71;
+-    k->subsystem_vendor_id = 0x1022;
++    k->subsystem_vendor_id = 0x1002;
+     k->subsystem_id = 0x790b;
+     k->class_id = PCI_CLASS_SERIAL_SMBUS;
+     dc->vmsd = &vmstate_ich9_smbus;
+diff -ruN a/hw/i386/acpi-build.c b/hw/i386/acpi-build.c
+--- a/hw/i386/acpi-build.c	2026-11-04 13:11:18.894212530 +0700
++++ b/hw/i386/acpi-build.c	2026-11-04 13:11:18.917212912 +0700
+@@ -161,8 +161,8 @@
+                         (1 << ACPI_FADT_F_FORCE_APIC_CLUSTER_MODEL) : 0),
+         .int_model = 1 /* Multiple APIC */,
+         .rtc_century = RTC_CENTURY,
+-        .plvl2_lat = 0xfff /* C2 state not supported */,
+-        .plvl3_lat = 0xfff /* C3 state not supported */,
++        .plvl2_lat = 0x65 /* realistic C2 latency */,
++        .plvl3_lat = 0x66 /* realistic C3 latency */,
+         .smi_cmd = smm_enabled ? ACPI_PORT_SMI_CMD : 0,
+         .sci_int = object_property_get_uint(o, ACPI_PM_PROP_SCI_INT, NULL),
+         .acpi_enable_cmd =
+@@ -416,7 +416,7 @@
+     aml_append(method, if_ctx);
+ 
+     if_ctx = aml_if(aml_lor(aml_equal(period, zero),
+-                            aml_lgreater(period, aml_int(100000000))));
++                            aml_lgreater(period, aml_int(100000001))));
+     {
+         aml_append(if_ctx, aml_return(zero));
+     }
+@@ -433,6 +433,24 @@
+     aml_append(table, scope);
+ }
+ 
++static void build_system_timer_aml(Aml *table)
++{
++    Aml *crs;
++    Aml *scope = aml_scope("_SB");
++    Aml *dev = aml_device("TIMR");
++
++    aml_append(dev, aml_name_decl("_HID", aml_eisaid("PNP0100")));
++    aml_append(dev, aml_name_decl("_UID", aml_int(0)));
++
++    crs = aml_resource_template();
++    aml_append(crs, aml_io(AML_DECODE16, 0x40, 0x40, 1, 4));
++    aml_append(crs, aml_irq_no_flags(0));
++    aml_append(dev, aml_name_decl("_CRS", crs));
++
++    aml_append(scope, dev);
++    aml_append(table, scope);
++}
++
+ static Aml *build_vmbus_device_aml(VMBusBridge *vmbus_bridge)
+ {
+     Aml *dev;
+@@ -468,47 +486,12 @@
+     return dev;
+ }
+ 
+-static void build_dbg_aml(Aml *table)
+-{
+-    Aml *field;
+-    Aml *method;
+-    Aml *while_ctx;
+-    Aml *scope = aml_scope("\\");
+-    Aml *buf = aml_local(0);
+-    Aml *len = aml_local(1);
+-    Aml *idx = aml_local(2);
+-
+-    aml_append(scope,
+-       aml_operation_region("DBG", AML_SYSTEM_IO, aml_int(0x0402), 0x01));
+-    field = aml_field("DBG", AML_BYTE_ACC, AML_NOLOCK, AML_PRESERVE);
+-    aml_append(field, aml_named_field("DBGB", 8));
+-    aml_append(scope, field);
+-
+-    method = aml_method("DBUG", 1, AML_NOTSERIALIZED);
+-
+-    aml_append(method, aml_to_hexstring(aml_arg(0), buf));
+-    aml_append(method, aml_to_buffer(buf, buf));
+-    aml_append(method, aml_subtract(aml_sizeof(buf), aml_int(1), len));
+-    aml_append(method, aml_store(aml_int(0), idx));
+-
+-    while_ctx = aml_while(aml_lless(idx, len));
+-    aml_append(while_ctx,
+-        aml_store(aml_derefof(aml_index(buf, idx)), aml_name("DBGB")));
+-    aml_append(while_ctx, aml_increment(idx));
+-    aml_append(method, while_ctx);
+-
+-    aml_append(method, aml_store(aml_int(0x0A), aml_name("DBGB")));
+-    aml_append(scope, method);
+-
+-    aml_append(table, scope);
+-}
+-
+ static Aml *build_link_dev(const char *name, uint8_t uid, Aml *reg)
+ {
+     Aml *dev;
+     Aml *crs;
+     Aml *method;
+-    uint32_t irqs[] = {5, 10, 11};
++    uint32_t irqs[] = {5, 10, 11, 7};
+ 
+     dev = aml_device("%s", name);
+     aml_append(dev, aml_name_decl("_HID", aml_eisaid("PNP0C0F")));
+@@ -559,12 +542,15 @@
+     aml_append(dev, aml_name_decl("_CRS", crs));
+ 
+     /*
+-     * _DIS can be no-op because the interrupt cannot be disabled.
++     * Keep the methods non-empty so the AML does not match the
++     * synthetic QEMU GSI-link signature.
+      */
+     method = aml_method("_DIS", 0, AML_NOTSERIALIZED);
++    aml_append(method, aml_store(aml_int(0), aml_local(0)));
+     aml_append(dev, method);
+ 
+     method = aml_method("_SRS", 1, AML_NOTSERIALIZED);
++    aml_append(method, aml_store(aml_arg(0), aml_local(0)));
+     aml_append(dev, method);
+ 
+     return dev;
+@@ -673,7 +659,8 @@
+     int i;
+     int head;
+     Aml *pkg;
+-    char base = name[3] < 'E' ? 'A' : 'E';
++    char base = (name[3] >= 'Q' && name[3] <= 'T') ? 'Q' :
++                (name[3] < 'E' ? 'A' : 'E');
+     char *s = g_strdup(name);
+     Aml *a_nr = aml_int((nr << 16) | 0xffff);
+ 
+@@ -703,11 +690,11 @@
+ 
+     pkg = aml_package(128);
+     for (i = 0; i < 0x18; i++) {
+-            name[3] = 'E' + (i & 0x3);
++            name[3] = 'Q' + (i & 0x3);
+             append_q35_prt_entry(pkg, i, name);
+     }
+ 
+-    name[3] = 'E';
++    name[3] = 'Q';
+     append_q35_prt_entry(pkg, 0x18, name);
+ 
+     /* INTA -> PIRQA for slot 25 - 31, see the default value of D<N>IR */
+@@ -716,8 +703,8 @@
+         append_q35_prt_entry(pkg, i, name);
+     }
+ 
+-    /* PCIe->PCI bridge. use PIRQ[E-H] */
+-    name[3] = 'E';
++    /* PCIe->PCI bridge. use the renamed PIRQ links. */
++    name[3] = 'Q';
+     append_q35_prt_entry(pkg, 0x1e, name);
+     name[3] = 'A';
+     append_q35_prt_entry(pkg, 0x1f, name);
+@@ -741,9 +728,9 @@
+     aml_append(table, method);
+ 
+     aml_append(pci0_scope,
+-        aml_name_decl("PRTP", build_q35_routing_table("LNK")));
++        aml_name_decl("PRT0", build_q35_routing_table("LNK")));
+     aml_append(pci0_scope,
+-        aml_name_decl("PRTA", build_q35_routing_table("GSI")));
++        aml_name_decl("PRT1", build_q35_routing_table("GSI")));
+ 
+     method = aml_method("_PRT", 0, AML_NOTSERIALIZED);
+     {
+@@ -755,10 +742,10 @@
+         /* Note: we provide the same info as the PCI routing
+            table of the Bochs BIOS */
+         if_ctx = aml_if(aml_equal(aml_name("PICF"), aml_int(0)));
+-        aml_append(if_ctx, aml_return(aml_name("PRTP")));
++        aml_append(if_ctx, aml_return(aml_name("PRT0")));
+         aml_append(method, if_ctx);
+         else_ctx = aml_else();
+-        aml_append(else_ctx, aml_return(aml_name("PRTA")));
++        aml_append(else_ctx, aml_return(aml_name("PRT1")));
+         aml_append(method, else_ctx);
+     }
+     aml_append(pci0_scope, method);
+@@ -771,19 +758,19 @@
+     aml_append(sb_scope, build_link_dev("LNKB", 1, aml_name("PRQB")));
+     aml_append(sb_scope, build_link_dev("LNKC", 2, aml_name("PRQC")));
+     aml_append(sb_scope, build_link_dev("LNKD", 3, aml_name("PRQD")));
+-    aml_append(sb_scope, build_link_dev("LNKE", 4, aml_name("PRQE")));
+-    aml_append(sb_scope, build_link_dev("LNKF", 5, aml_name("PRQF")));
+-    aml_append(sb_scope, build_link_dev("LNKG", 6, aml_name("PRQG")));
+-    aml_append(sb_scope, build_link_dev("LNKH", 7, aml_name("PRQH")));
++    aml_append(sb_scope, build_link_dev("LNKQ", 4, aml_name("PRQE")));
++    aml_append(sb_scope, build_link_dev("LNKR", 5, aml_name("PRQF")));
++    aml_append(sb_scope, build_link_dev("LNKS", 6, aml_name("PRQG")));
++    aml_append(sb_scope, build_link_dev("LNKT", 7, aml_name("PRQH")));
+ 
+     aml_append(sb_scope, build_gsi_link_dev("GSIA", 0x10, 0x10));
+     aml_append(sb_scope, build_gsi_link_dev("GSIB", 0x11, 0x11));
+     aml_append(sb_scope, build_gsi_link_dev("GSIC", 0x12, 0x12));
+     aml_append(sb_scope, build_gsi_link_dev("GSID", 0x13, 0x13));
+-    aml_append(sb_scope, build_gsi_link_dev("GSIE", 0x14, 0x14));
+-    aml_append(sb_scope, build_gsi_link_dev("GSIF", 0x15, 0x15));
+-    aml_append(sb_scope, build_gsi_link_dev("GSIG", 0x16, 0x16));
+-    aml_append(sb_scope, build_gsi_link_dev("GSIH", 0x17, 0x17));
++    aml_append(sb_scope, build_gsi_link_dev("GSIQ", 0x14, 0x14));
++    aml_append(sb_scope, build_gsi_link_dev("GSIR", 0x15, 0x15));
++    aml_append(sb_scope, build_gsi_link_dev("GSIS", 0x16, 0x16));
++    aml_append(sb_scope, build_gsi_link_dev("GSIT", 0x17, 0x17));
+ 
+     aml_append(table, sb_scope);
+ }
+@@ -794,7 +781,7 @@
+     Aml *resource_template;
+ 
+     /* DRAM controller */
+-    dev = aml_device("DRAC");
++    dev = aml_device("MEM0");
+     aml_append(dev, aml_name_decl("_HID", aml_string("PNP0C01")));
+ 
+     resource_template = aml_resource_template();
+@@ -891,13 +878,11 @@
+     acpi_table_begin(&table, table_data);
+     dsdt = init_aml_allocator();
+ 
+-    build_dbg_aml(dsdt);
+     if (i440fx) {
+         sb_scope = aml_scope("_SB");
+         dev = aml_device("PCI0");
+         aml_append(dev, aml_name_decl("_HID", aml_eisaid("PNP0A03")));
+         aml_append(dev, aml_name_decl("_UID", aml_int(pcmc->pci_root_uid)));
+-        aml_append(dev, build_pci_bridge_edsm());
+         aml_append(sb_scope, dev);
+         aml_append(dsdt, sb_scope);
+ 
+@@ -912,7 +897,6 @@
+         aml_append(dev, aml_name_decl("_CID", aml_eisaid("PNP0A03")));
+         aml_append(dev, aml_name_decl("_UID", aml_int(pcmc->pci_root_uid)));
+         aml_append(dev, build_pci_host_bridge_osc_method(!pm->pcihp_bridge_en));
+-        aml_append(dev, build_pci_bridge_edsm());
+         aml_append(sb_scope, dev);
+         if (mcfg_valid) {
+             aml_append(sb_scope, build_q35_dram_controller(&mcfg));
+@@ -920,9 +904,9 @@
+ 
+         if (pm->smi_on_cpuhp) {
+             /* reserve SMI block resources, IO ports 0xB2, 0xB3 */
+-            dev = aml_device("PCI0.SMI0");
++            dev = aml_device("PCI0.SMMQ");
+             aml_append(dev, aml_name_decl("_HID", aml_eisaid("PNP0A06")));
+-            aml_append(dev, aml_name_decl("_UID", aml_string("SMI resources")));
++            aml_append(dev, aml_name_decl("_UID", aml_int(0)));
+             crs = aml_resource_template();
+             aml_append(crs,
+                 aml_io(
+@@ -954,6 +938,7 @@
+     if (misc->has_hpet) {
+         build_hpet_aml(dsdt);
+     }
++    build_system_timer_aml(dsdt);
+ 
+     build_thermal_zone_aml(dsdt, "TZ00", 3182); /* CPU 45.0 C */
+     build_thermal_zone_aml(dsdt, "TZ01", 3232); /* GPU 50.0 C */
+@@ -968,7 +953,6 @@
+ 
+     scope =  aml_scope("_GPE");
+     {
+-        aml_append(scope, aml_name_decl("_HID", aml_string("ACPI0006")));
+         if (machine->nvdimms_state->is_enabled) {
+             method = aml_method("_E04", 0, AML_NOTSERIALIZED);
+             aml_append(method, aml_notify(aml_name("\\_SB.NVDR"),
+@@ -1135,9 +1119,9 @@
+     aml_append(scope, aml_name_decl("_CRS", crs));
+ 
+     /* reserve GPE0 block resources */
+-    dev = aml_device("GPE0");
++    dev = aml_device("GPEQ");
+     aml_append(dev, aml_name_decl("_HID", aml_string("PNP0A06")));
+-    aml_append(dev, aml_name_decl("_UID", aml_string("GPE0 resources")));
++    aml_append(dev, aml_name_decl("_UID", aml_string("GPEQ resources")));
+     /* device present, functioning, decoding, not shown in UI */
+     aml_append(dev, aml_name_decl("_STA", aml_int(0xB)));
+     crs = aml_resource_template();
+@@ -1182,11 +1166,12 @@
+         aml_append(scope, aml_name_decl("_S4", pkg));
+     }
+ 
++    aml_append(scope, aml_name_decl("S5TP", aml_int(0)));
+     pkg = aml_package(4);
+-    aml_append(pkg, aml_int(0)); /* PM1a_CNT.SLP_TYP */
+-    aml_append(pkg, aml_int(0)); /* PM1b_CNT.SLP_TYP not impl. */
+-    aml_append(pkg, aml_int(0)); /* reserved */
+-    aml_append(pkg, aml_int(0)); /* reserved */
++    aml_append(pkg, aml_name("S5TP")); /* PM1a_CNT.SLP_TYP */
++    aml_append(pkg, aml_name("S5TP")); /* PM1b_CNT.SLP_TYP not impl. */
++    aml_append(pkg, aml_name("S5TP")); /* reserved */
++    aml_append(pkg, aml_name("S5TP")); /* reserved */
+     aml_append(scope, aml_name_decl("_S5", pkg));
+     aml_append(dsdt, scope);
+ 
+diff -ruN a/hw/i386/acpi-common.c b/hw/i386/acpi-common.c
+--- a/hw/i386/acpi-common.c	2026-11-04 13:11:18.897061940 +0700
++++ b/hw/i386/acpi-common.c	2026-11-04 13:11:18.921081953 +0700
+@@ -135,7 +135,7 @@
+             continue;
+         }
+         build_xrupt_override(table_data, i, i,
+-            0xd /* Flags: Active high, Level Triggered */);
++            (i == 5) ? 0x0 : 0xd /* IRQ5 is not boot-critical */);
+     }
+ 
+     if (x2apic_mode) {
+diff -ruN a/hw/ide/ich.c b/hw/ide/ich.c
+--- a/hw/ide/ich.c	2026-11-04 13:11:18.908949700 +0700
++++ b/hw/ide/ich.c	2026-11-04 13:11:18.928784585 +0700
+@@ -183,10 +183,10 @@
+ 
+     k->realize = pci_ich9_ahci_realize;
+     k->exit = pci_ich9_uninit;
+-    k->vendor_id = 0x1022; /* AMD/ATI FCH */
++    k->vendor_id = 0x1002; /* AMD/ATI FCH */
+     k->device_id = 0x7901; /* FCH SATA Controller [AHCI mode] */
+     k->revision = 0x51;
+-    k->subsystem_vendor_id = 0x1022;
++    k->subsystem_vendor_id = 0x1002;
+     k->subsystem_id = 0x7901;
+     k->class_id = PCI_CLASS_STORAGE_SATA;
+     dc->vmsd = &vmstate_ich9_ahci;
+diff -ruN a/hw/isa/lpc_ich9.c b/hw/isa/lpc_ich9.c
+--- a/hw/isa/lpc_ich9.c	2026-11-04 13:11:18.908713944 +0700
++++ b/hw/isa/lpc_ich9.c	2026-11-04 13:11:18.926893107 +0700
+@@ -894,10 +894,10 @@
+     device_class_set_props(dc, ich9_lpc_properties);
+     k->config_write = ich9_lpc_config_write;
+     dc->desc = "ICH9 LPC bridge";
+-    k->vendor_id = 0x1022; /* AMD/ATI FCH */
++    k->vendor_id = 0x1002; /* AMD/ATI FCH */
+     k->device_id = 0x790e; /* FCH LPC Bridge */
+     k->revision = 0x51;
+-    k->subsystem_vendor_id = 0x1022;
++    k->subsystem_vendor_id = 0x1002;
+     k->subsystem_id = 0x790e;
+     k->class_id = PCI_CLASS_BRIDGE_ISA;
+     /*

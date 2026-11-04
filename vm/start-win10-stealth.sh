@@ -6,7 +6,8 @@
 #   win10_VARS.fd      - writable copy of ../firmware/OVMF_VARS_stealth.fd
 #
 # Optional environment overrides:
-#   QEMU_BIN, OVMF_CODE, DISK, VARS
+#   QEMU_BIN, OVMF_CODE, DISK, VARS, ACCEL, TPM, CPU_MODE, CPU_MODEL, SMP, ISO
+# The guest-visible platform is a GEEKOM A8 mini PC (AMD Ryzen 7 8845HS).
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,7 +16,14 @@ OVMF_CODE="${OVMF_CODE:-$DIR/../firmware/OVMF_CODE_stealth.fd}"
 DISK="${DISK:-$DIR/win10.qcow2}"
 VARS="${VARS:-$DIR/win10_VARS.fd}"
 SMB_DIR="${SMB_DIR:-$DIR/share}"
+ISO="${ISO:-}"
 REFRESH="${REFRESH:-144}"
+ACCEL="${ACCEL:-kvm}"
+case "$ACCEL" in
+    kvm) : "${TPM:=1}" ;;
+    tcg) : "${TPM:=0}" ;;
+    *) echo "[!] Invalid ACCEL: $ACCEL (use kvm or tcg)" >&2; exit 1 ;;
+esac
 CPU_MODE="${CPU_MODE:-auto}"
 HOST_VENDOR=$(awk -F: '/^vendor_id/{gsub(/[ \t]/,"",$2); print $2; exit}' /proc/cpuinfo 2>/dev/null)
 if [ -z "${CPU_MODEL:-}" ]; then
@@ -42,12 +50,19 @@ if [ -z "${CPU_MODEL:-}" ]; then
             ;;
     esac
 fi
-SMP="${SMP:-8,sockets=1,cores=8,threads=1}"
+SMP="${SMP:-16,sockets=1,cores=8,threads=2}"
 mkdir -p "$SMB_DIR"
 
 for f in "$QEMU_BIN" "$OVMF_CODE" "$DISK" "$VARS"; do
     [ -e "$f" ] || { echo "[!] Missing: $f" >&2; exit 1; }
 done
+if [ -n "$ISO" ] && [ ! -e "$ISO" ]; then
+    echo "[!] Missing ISO: $ISO" >&2; exit 1
+fi
+BOOT_ARGS=(-boot order=c)
+if [ -n "$ISO" ]; then
+    BOOT_ARGS=(-cdrom "$ISO" -boot order=d)
+fi
 
 TPM="${TPM:-1}"
 TPM_ARGS=()
@@ -81,15 +96,22 @@ if [ "$CPU_MODEL" = "host" ] && ! grep -qiE 'AMD Ryzen 7 8845H(S)?' /proc/cpuinf
     echo "    CPU_MODEL='EPYC-Genoa,family=25,model=117,stepping=2,-pcid,-la57' $0" >&2
 fi
 
-exec "$QEMU_BIN" \
-  -enable-kvm \
-  -machine q35,smm=on,smbios-entry-point-type=64,i8042=off,vmport=off \
-  -cpu "$CPU_MODEL",topoext=on,hypervisor=off,kvm=off,\
+if [ "$ACCEL" = "tcg" ]; then
+    ACCEL_ARGS=(-accel tcg,thread=multi)
+    CPU_EXTRA=",hypervisor=off,-topoext,-amd-stibp,-stibp-always-on,-amd-ssbd,-amd-psfd,-lfence-always-serializing,-auto-ibrs,-nrip-save,-vnmi,-xsavec,-xsaves,-avx512-vpopcntdq,-avx512-bf16,-invpcid,-avx512f,-avx512dq,-avx512ifma,-avx512cd,-avx512bw,-avx512vl,-avx512vbmi,-avx512vbmi2,-avx512vnni,-avx512bitalg,-gfni,-vpclmulqdq,-fxsr-opt,-misalignsse,-osvw,-perfctr-core,-clzero,-ibpb,-ibrs"
+else
+    ACCEL_ARGS=(-enable-kvm)
+    CPU_EXTRA=",topoext=on,hypervisor=off,kvm=off,\
 -kvmclock,-kvm-nopiodelay,-kvm-mmu,-kvm-asyncpf,-kvm-steal-time,\
 -kvm-pv-eoi,-kvm-pv-unhalt,-kvm-pv-tlb-flush,-kvm-asyncpf-vmexit,\
 -kvm-pv-ipi,-kvm-poll-control,-kvm-pv-sched-yield,-kvm-asyncpf-int,\
--kvm-msi-ext-dest-id,-kvm-hint-dedicated,\
-model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
+-kvm-msi-ext-dest-id,-kvm-hint-dedicated"
+fi
+
+exec "$QEMU_BIN" \
+  "${ACCEL_ARGS[@]}" \
+  -machine q35,smm=on,smbios-entry-point-type=64,i8042=off,vmport=off \
+  -cpu "$CPU_MODEL$CPU_EXTRA",model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -smp "$SMP" \
   -m 8192 \
   -rtc base=localtime,clock=host \
@@ -97,7 +119,7 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -drive if=pflash,format=raw,file="$VARS" \
   -drive file="$DISK",if=none,id=disk0,format=qcow2,cache=writeback \
   -device "ide-hd,drive=disk0,bus=ide.0,rotation_rate=1,serial=S6PNNJ0T8123456,model=Samsung SSD 870 EVO 250GB" \
-  -boot order=c \
+  "${BOOT_ARGS[@]}" \
   -netdev user,id=net0,smb="$SMB_DIR" \
   -device e1000e,netdev=net0,mac=00:1b:21:7c:4e:2a \
   -device qemu-xhci,id=xhci \
@@ -120,5 +142,4 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -smbios "type=11,value=Default string" \
   -smbios "type=17,loc_pfx=SODIMM,bank=BANK0,manufacturer=Samsung,serial=S0A1B2C3D4,asset=Default string,part=M425R1GB4BB0-CQKOL,speed=5600" \
   "${TPM_ARGS[@]}" \
-  -name "Windows 10 Pro" \
   -display gtk,gl=on

@@ -62,6 +62,7 @@ wget https://download.qemu.org/qemu-10.2.2.tar.xz
 tar xvJf qemu-10.2.2.tar.xz
 cd qemu-10.2.2
 git apply ../qemu-anti-detection/qemu-10.2.2.patch
+git apply ../qemu-anti-detection/qemu-10.2.2-acpi-stealth.patch
 ./configure
 sudo make install -j$(nproc)
 ```
@@ -77,8 +78,34 @@ sudo make install -j$(nproc)
 | qemu-8.1.0.patch | 8.1.x |
 | qemu-8.2.0.patch | 8.2.x |
 | qemu-10.2.2.patch | 10.2.x |
+| qemu-10.2.2-acpi-stealth.patch | 10.2.x, apply after the base patch |
 
-# QEMU XML Config
+## SEB / VMAware hardening
+
+`qemu-10.2.2-acpi-stealth.patch` removes the remaining ACPI/AML fingerprints
+used by VMAware 2.8.2 (DBUG, DRAC, SMI0/GPE0, ACPI0006, PRTP/PRTA, LNKE-H,
+GSIE-H, the QEMU HPET signature, TPM PPI names, zeroed `_S5`, `_OSC`, EDSM,
+PIRQ `_PRS`, APIC overrides and FADT C2/C3 latency) and adds a PNP0100
+system timer. It also changes the FCH LPC/SATA/SMBus vendor to `1002`.
+
+Under KVM, VMAware then reports only GPU, KVM interception, SVM, measured
+boot and timing. For Safe Exam Browser use TCG and no TPM:
+
+```bash
+ACCEL=tcg TPM=0 ./vm/start-win10-stealth.sh
+```
+
+TCG avoids the KVM hypercall interception and VM-exit timing checks; `TPM=0`
+removes the OVMF measured-boot log. Secure Boot can stay enabled. See
+[STEALTH.md](STEALTH.md#seb--vmaware-profile) for the score breakdown.
+
+For a fresh Windows install, use `firmware/OVMF_VARS_fresh.fd` (Secure Boot
+keys, no stale boot entries) and pass the ISO:
+
+```bash
+DISK=win10.qcow2 VARS=win10_VARS.fd ISO=/path/Win10.iso ./vm/start-win10-stealth.sh
+```
+
 
 Insert YOUR virtual machine's uuid.
 ```

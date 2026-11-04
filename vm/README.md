@@ -1,11 +1,15 @@
 # VM files
 
-1. Build/install the patched QEMU from the release asset or `qemu-10.2.2.patch`.
+1. Build/install the patched QEMU from the release asset, applying
+   `qemu-10.2.2.patch` then `qemu-10.2.2-acpi-stealth.patch`.
 2. Build/install the patched OVMF or use `../firmware/OVMF_CODE_stealth.fd`.
-3. Create the writable NVRAM copy:
+3. Create the writable NVRAM copy. For a new Windows install use the
+   fresh store (keys, no stale boot entries):
    ```bash
-   cp ../firmware/OVMF_VARS_stealth.fd win10_VARS.fd
+   cp ../firmware/OVMF_VARS_fresh.fd win10_VARS.fd
    ```
+   For an existing disk whose boot entry already matches, use
+   `OVMF_VARS_stealth.fd`.
 4. Put the installed Windows disk at `win10.qcow2`.
 5. Run:
    ```bash
@@ -24,8 +28,8 @@ bcdboot C:\Windows /s S: /f UEFI
 The script uses `/usr/local/bin/qemu-system-x86_64` by default; override with
 `QEMU_BIN=/path/to/qemu-system-x86_64`.
 
-The guest profile is GEEKOM A8 / Ryzen 7 8845HS, 8 vCPU (8C/8T), 8 GiB RAM,
-Samsung SSD 870 EVO 250 GB on AMD FCH AHCI (`MediaType = SSD`), Intel 82574L
+The guest profile is GEEKOM A8 / Ryzen 7 8845HS, 16 vCPU (8C/16T), 8 GiB RAM,
+Samsung SSD 870 EVO 250 GB on AMD/ATI FCH AHCI (`1002:7901`, `MediaType = SSD`), Intel 82574L
 NIC, Realtek ALC897 audio, dual AMD Phoenix xHCI controllers, 1920x1080 ASUS VA24EHE EDID.
 
 EDID advertises a 50-240 Hz range; set the preferred timing with
@@ -35,6 +39,31 @@ GPU passthrough (see `../STEALTH.md`).
 
 The guest exposes 4 ACPI thermal zones (`TZ00`-`TZ03`), 2 fans, 5 voltage
 probes, 4 temperature probes and 2 current probes through SMBIOS/ACPI.
+
+## Fresh install and SEB profile
+
+Fresh Windows install (the ISO is attached as a CD and booted first):
+
+```bash
+cp ../firmware/OVMF_VARS_fresh.fd win10_VARS.fd
+DISK=win10.qcow2 VARS=win10_VARS.fd ISO=/path/Win10_22H2.iso \
+  ./start-win10-stealth.sh
+```
+
+Normal use (KVM, TPM 2.0 on):
+
+```bash
+./start-win10-stealth.sh
+```
+
+Safe Exam Browser (TCG, no TPM to hide the OVMF measured-boot log):
+
+```bash
+ACCEL=tcg TPM=0 ./start-win10-stealth.sh
+```
+
+`ACCEL=tcg` defaults `TPM` to `0`; set `TPM=1` explicitly if you need TPM
+under TCG. TCG is much slower. See `../STEALTH.md#seb--vmaware-profile`.
 
 ## Secure Boot and TPM 2.0
 

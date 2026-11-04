@@ -15,6 +15,9 @@ Files:
   - `GEEKOM Secure Boot PK` / `GEEKOM Secure Boot KEK`,
   - Microsoft KEK/db/dbx certificates,
   - `SecureBootEnable=1`, and a Windows Boot Manager entry.
+- `OVMF_VARS_fresh.fd` — same keys/`SecureBootEnable=1`, but no
+  `Boot####`/`BootOrder`; use this for a fresh Windows install so the
+  installer creates the first boot entry.
 
 Use with:
 

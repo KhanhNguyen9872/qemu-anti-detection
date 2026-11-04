@@ -66,8 +66,15 @@ powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\audit-guest.ps1
 
 # remove Kernel Debug NIC, non-present ghosts, and stale PS/2 devices
 powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\clean-guest.ps1
+
+# if Windows Update installed a broken AMD display driver for 1002:1900
+powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\fix-display.ps1
 ```
 
-Reboot after cleanup. The Intel 82574L is a real Intel NIC; its `#2` suffix is
-a re-enumeration artifact, not a QEMU device. QEMU does not emulate a
+Reboot after cleanup. The display fix removes the failed OEM AMD binding,
+keeps the inbox Microsoft Basic Display Adapter, and disables Windows Update
+driver search so the broken AMD package is not reinstalled.
+
+The Intel 82574L is a real Intel NIC; its `#2` suffix is a re-enumeration
+artifact, not a QEMU device. QEMU does not emulate a
 Realtek 2.5GbE/I225-V, so a matching NIC name requires PCI passthrough.

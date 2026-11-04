@@ -64,7 +64,7 @@ Normal use (KVM, TPM 2.0 on):
 Safe Exam Browser (TCG, no TPM to hide the OVMF measured-boot log):
 
 ```bash
-ACCEL=tcg TPM=0 ./start-win10.sh
+./start-seb.sh
 ```
 
 `ACCEL=tcg` defaults `TPM` to `0`; set `TPM=1` explicitly if you need TPM

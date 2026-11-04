@@ -94,7 +94,7 @@ Under KVM, VMAware then reports only GPU, KVM interception, SVM, measured
 boot and timing. For Safe Exam Browser use TCG and no TPM:
 
 ```bash
-ACCEL=tcg TPM=0 ./vm/start-win10-stealth.sh
+./vm/start-seb.sh
 ```
 
 TCG avoids the KVM hypercall interception and VM-exit timing checks; `TPM=0`

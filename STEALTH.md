@@ -1,9 +1,8 @@
 # Stealth QEMU 10.2.2 build — GEEKOM A8 / Ryzen 7 8845HS profile
 
-The complete, buildable patched QEMU 10.2.2 source tree is distributed as
-the `qemu-10.2.2-stealth-source.tar.xz` asset of the
-[v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth).
-The base patch is `qemu-10.2.2.patch`; the ACPI/VMAware hardening delta is
+Apply the two patches to a vanilla QEMU 10.2.2 tarball from the
+[v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth):
+the base patch is `qemu-10.2.2.patch`; the ACPI/VMAware hardening delta is
 `qemu-10.2.2-acpi-stealth.patch` and must be applied after it.
 
 The patch applies to a **vanilla QEMU 10.2.2 tarball** and includes both the

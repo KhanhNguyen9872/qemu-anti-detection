@@ -63,6 +63,7 @@ tar xvJf qemu-10.2.2.tar.xz
 cd qemu-10.2.2
 git apply ../qemu-anti-detection/qemu-10.2.2.patch
 git apply ../qemu-anti-detection/qemu-10.2.2-acpi-stealth.patch
+git apply ../qemu-anti-detection/qemu-10.2.2-smb-share.patch
 ./configure
 sudo make install -j$(nproc)
 ```
@@ -79,6 +80,7 @@ sudo make install -j$(nproc)
 | qemu-8.2.0.patch | 8.2.x |
 | qemu-10.2.2.patch | 10.2.x |
 | qemu-10.2.2-acpi-stealth.patch | 10.2.x, apply after the base patch |
+| qemu-10.2.2-smb-share.patch | 10.2.x, renames the SMB share to `share` |
 
 ## SEB / VMAware hardening
 
@@ -190,7 +192,7 @@ Insert YOUR virtual machine's uuid.
 This fork adds a complete, buildable patched QEMU 10.2.2 tree and a stronger
 anti-detection profile on top of the original patch:
 
-- **Patched QEMU 10.2.2 source** — apply `qemu-10.2.2.patch` then `qemu-10.2.2-acpi-stealth.patch` to a vanilla QEMU 10.2.2 tarball; both are in the [v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth).
+- **Patched QEMU 10.2.2 source** — apply `qemu-10.2.2.patch`, `qemu-10.2.2-acpi-stealth.patch`, then `qemu-10.2.2-smb-share.patch` to a vanilla QEMU 10.2.2 tarball; all are in the [v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth).
 - `qemu-10.2.2.patch` — full patch against a vanilla QEMU 10.2.2 tarball.
 - `ovmf-stealth.patch` + `firmware/` — patched OVMF for the AMD host bridge,
   AMD VGA ID, and no TianoCore BGRT/logo.
@@ -215,7 +217,7 @@ anti-detection profile on top of the original patch:
 
 ### Tóm tắt tiếng Việt
 
-- Tải QEMU 10.2.2 gốc, áp `qemu-10.2.2.patch` rồi `qemu-10.2.2-acpi-stealth.patch` (cả hai nằm trong release `v10.2.2-stealth`).
+- Tải QEMU 10.2.2 gốc, áp `qemu-10.2.2.patch`, `qemu-10.2.2-acpi-stealth.patch` rồi `qemu-10.2.2-smb-share.patch` (cả ba nằm trong release `v10.2.2-stealth`).
 - File `qemu-10.2.2.patch` áp dụng trực tiếp lên QEMU 10.2.2 gốc.
 - OVMF cần patch riêng (`ovmf-stealth.patch`) vì QEMU đổi host bridge/VGA ID;
   bản build sẵn nằm trong `firmware/`.

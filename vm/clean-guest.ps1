@@ -1,6 +1,6 @@
 # Clean up guest-only anti-detection leftovers.
 # Run from an elevated PowerShell:
-#   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\clean-guest.ps1
+#   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\share\clean-guest.ps1
 $ErrorActionPreference = 'SilentlyContinue'
 $log = 'C:\clean-guest.log'
 Remove-Item $log -Force
@@ -51,5 +51,5 @@ Get-PnpDevice -Class Keyboard,Mouse | Select-Object Status,Class,FriendlyName,In
     Format-Table -AutoSize | Out-File $log -Append -Encoding UTF8
 Log '=== DONE ==='
 
-Copy-Item $log '\\10.0.2.4\qemu\clean-guest.log' -Force
+Copy-Item $log '\\10.0.2.4\share\clean-guest.log' -Force
 Write-Host 'Cleanup complete. Reboot the VM to finish removing the ghost devices.'

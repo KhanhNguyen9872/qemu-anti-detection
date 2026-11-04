@@ -52,8 +52,8 @@ if [ -z "${CPU_MODEL:-}" ]; then
 fi
 SMP="${SMP:-16,sockets=1,cores=8,threads=2}"
 mkdir -p "$SMB_DIR"
-if [ ! -f "$SMB_DIR/map-qemu-share.bat" ]; then
-    for _src in "$DIR/share/map-qemu-share.bat" "$DIR/map-qemu-share.bat"; do
+if [ ! -f "$SMB_DIR/map-share.bat" ]; then
+    for _src in "$DIR/share/map-share.bat" "$DIR/map-share.bat"; do
         if [ -f "$_src" ]; then
             cp "$_src" "$SMB_DIR/" 2>/dev/null || true
             break
@@ -116,9 +116,9 @@ else
 -kvm-msi-ext-dest-id,-kvm-hint-dedicated"
 fi
 
-echo "[i] SMB share: $SMB_DIR -> \\\\10.0.2.4\\qemu" >&2
-echo "[i] Windows: net use Z: \\\\10.0.2.4\\qemu /persistent:yes" >&2
-echo "[i] Or run: \\\\10.0.2.4\\qemu\\map-qemu-share.bat" >&2
+echo "[i] SMB share: $SMB_DIR -> \\\\10.0.2.4\\share" >&2
+echo "[i] Windows: net use Z: \\\\10.0.2.4\\share /persistent:yes" >&2
+echo "[i] Or run: \\\\10.0.2.4\\share\\map-share.bat" >&2
 exec "$QEMU_BIN" \
   "${ACCEL_ARGS[@]}" \
   -machine q35,smm=on,smbios-entry-point-type=64,i8042=off,vmport=off \

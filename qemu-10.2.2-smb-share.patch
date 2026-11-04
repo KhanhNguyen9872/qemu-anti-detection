@@ -1,0 +1,20 @@
+--- a/net/slirp.c	2026-11-04 13:52:35.452545025 +0700
++++ b/net/slirp.c	2026-11-04 13:52:35.454008392 +0700
+@@ -1025,7 +1025,7 @@
+         return -1;
+     }
+ 
+-    s->smb_dir = g_dir_make_tmp("qemu-smb.XXXXXX", NULL);
++    s->smb_dir = g_dir_make_tmp("smb.XXXXXX", NULL);
+     if (!s->smb_dir) {
+         error_setg(errp, "Could not create samba server dir");
+         return -1;
+@@ -1059,7 +1059,7 @@
+             "printing = bsd\n"
+             "disable spoolss = yes\n"
+             "usershare max shares = 0\n"
+-            "[qemu]\n"
++            "[share]\n"
+             "path=%s\n"
+             "read only=no\n"
+             "guest ok=yes\n"

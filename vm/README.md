@@ -1,7 +1,8 @@
 # VM files
 
 1. Build/install the patched QEMU from the release asset, applying
-   `qemu-10.2.2.patch` then `qemu-10.2.2-acpi-stealth.patch`.
+   `qemu-10.2.2.patch`, `qemu-10.2.2-acpi-stealth.patch`, then
+   `qemu-10.2.2-smb-share.patch`.
 2. Build/install the patched OVMF or use `../firmware/OVMF_CODE_stealth.fd`.
 3. Create the writable NVRAM copy. For a new Windows install use the
    fresh store (keys, no stale boot entries):
@@ -138,18 +139,18 @@ the ACPI/device profile, so use the same patched 10.2.2 build.
 The launch scripts export `${SMB_DIR:-$HOME/vms/share}` to the guest through
 QEMU user-mode SMB. QEMU must be built with `--smbd=/usr/sbin/smbd` (or
 another path to the Samba `smbd` binary). The launcher also copies
-`map-qemu-share.bat` into that directory if it is missing and prints the
+`map-share.bat` into that directory if it is missing and prints the
 exact mapping command.
 
 The host only **exposes** the share; Windows does not auto-map a drive on a
 brand-new install. Map it once from a guest command prompt:
 
 ```powershell
-net use Z: \\10.0.2.4\qemu /persistent:yes
+net use Z: \\10.0.2.4\share /persistent:yes
 ```
 
 Files are then available under `Z:\` and in `$HOME/vms/share` on the host.
-To make it automatic, run `\\10.0.2.4\qemu\map-qemu-share.bat` once and copy
+To make it automatic, run `\\10.0.2.4\share\map-share.bat` once and copy
 it to the Windows Startup folder (`shell:startup`), or run the helper from
 there. The batch retries the mapping three seconds after login, which is
 useful when the QEMU SMB server is not ready immediately.
@@ -164,13 +165,13 @@ test profiles. Run these from an **elevated PowerShell** in the guest:
 
 ```powershell
 # read-only audit
-powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\audit-guest.ps1
+powershell -ExecutionPolicy Bypass -File \\10.0.2.4\share\audit-guest.ps1
 
 # remove Kernel Debug NIC, non-present ghosts, and stale PS/2 devices
-powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\clean-guest.ps1
+powershell -ExecutionPolicy Bypass -File \\10.0.2.4\share\clean-guest.ps1
 
 # if Windows Update installed a broken AMD display driver for 1002:1900
-powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\fix-display.ps1
+powershell -ExecutionPolicy Bypass -File \\10.0.2.4\share\fix-display.ps1
 ```
 
 Reboot after cleanup. The display fix removes the failed OEM AMD binding,

@@ -31,5 +31,5 @@ Get-PnpDevice -Class AudioEndpoint | Select-Object Status,FriendlyName,InstanceI
 Get-PnpDevice -Class Display,USB,System | Select-Object Status,Class,FriendlyName,InstanceId | Sort-Object Class,FriendlyName | Format-Table -AutoSize | Out-File $log -Append -Encoding UTF8
 
 '=== Done ===' | Out-File $log -Append -Encoding UTF8
-Copy-Item $log '\\10.0.2.4\qemu\pnp-audit.txt' -Force
-Write-Host 'Audit written to C:\pnp-audit.txt and \\10.0.2.4\qemu\pnp-audit.txt'
+Copy-Item $log '\\10.0.2.4\share\pnp-audit.txt' -Force
+Write-Host 'Audit written to C:\pnp-audit.txt and \\10.0.2.4\share\pnp-audit.txt'

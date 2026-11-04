@@ -4,12 +4,12 @@ Anti-detection guest cleanup
 Run these from an elevated PowerShell inside the Windows guest.
 
 1) Read-only audit (recommended first)
-   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\audit-guest.ps1
-   Result: C:\pnp-audit.txt and \\10.0.2.4\qemu\pnp-audit.txt
+   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\share\audit-guest.ps1
+   Result: C:\pnp-audit.txt and \\10.0.2.4\share\pnp-audit.txt
 
 2) Remove kernel-debug NIC, ghost devices, and stale PS/2 devices
-   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\qemu\clean-guest.ps1
-   Result: C:\clean-guest.log and \\10.0.2.4\qemu\clean-guest.log
+   powershell -ExecutionPolicy Bypass -File \\10.0.2.4\share\clean-guest.ps1
+   Result: C:\clean-guest.log and \\10.0.2.4\share\clean-guest.log
    Reboot the VM afterwards.
 
 Notes

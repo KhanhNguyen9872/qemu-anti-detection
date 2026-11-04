@@ -3,7 +3,8 @@
 Apply the two patches to a vanilla QEMU 10.2.2 tarball from the
 [v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth):
 the base patch is `qemu-10.2.2.patch`; the ACPI/VMAware hardening delta is
-`qemu-10.2.2-acpi-stealth.patch` and must be applied after it.
+`qemu-10.2.2-acpi-stealth.patch`; and `qemu-10.2.2-smb-share.patch` renames
+the guest SMB share from `qemu` to `share`. Apply them in that order.
 
 The patch applies to a **vanilla QEMU 10.2.2 tarball** and includes both the
 original `qemu-anti-detection` string changes and the additional stealth work
@@ -93,6 +94,7 @@ tar xf qemu-10.2.2.tar.xz
 cd qemu-10.2.2
 git apply /path/to/qemu-10.2.2.patch
 git apply /path/to/qemu-10.2.2-acpi-stealth.patch
+git apply /path/to/qemu-10.2.2-smb-share.patch
 ./configure --enable-kvm --enable-gtk --enable-spice --enable-slirp
 make -j"$(nproc)"
 sudo make install

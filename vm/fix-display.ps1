@@ -61,5 +61,5 @@ Log '=== display state ==='
 Get-PnpDevice -Class Display | Select-Object Status,FriendlyName,InstanceId,Problem |
     Format-List | Out-File $log -Append -Encoding UTF8
 
-Copy-Item $log '\\10.0.2.4\qemu\fix-display.log' -Force
+Copy-Item $log '\\10.0.2.4\share\fix-display.log' -Force
 Write-Host 'Display fix complete. Reboot the VM.'

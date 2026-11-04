@@ -1,8 +1,7 @@
 diff --git a/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h b/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h
-index f8e2b4f..f61d262 100644
 --- a/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h
 +++ b/OvmfPkg/Include/IndustryStandard/Q35MchIch9.h
-@@ -19,7 +19,7 @@
+@@ -20,7 +20,7 @@
  //
  // Host Bridge Device ID (DID) value for Q35/MCH
  //
@@ -12,10 +11,9 @@ index f8e2b4f..f61d262 100644
  //
  // B/D/F/Type: 0/0/0/PCI
 diff --git a/OvmfPkg/OvmfPkgX64.dsc b/OvmfPkg/OvmfPkgX64.dsc
-index 9b865a5..4b54015 100644
 --- a/OvmfPkg/OvmfPkgX64.dsc
 +++ b/OvmfPkg/OvmfPkgX64.dsc
-@@ -940,7 +940,7 @@
+@@ -852,7 +852,7 @@
      <LibraryClasses>
        XenPlatformLib|OvmfPkg/Library/XenPlatformLib/XenPlatformLib.inf
    }
@@ -24,23 +22,22 @@ index 9b865a5..4b54015 100644
    MdeModulePkg/Application/UiApp/UiApp.inf {
      <LibraryClasses>
        NULL|MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf
-@@ -1025,7 +1025,7 @@
- !if $(STANDALONE_MM_ENABLE) != TRUE
+@@ -937,7 +937,7 @@
+   OvmfPkg/AcpiPlatformDxe/AcpiPlatformDxe.inf
+   MdeModulePkg/Universal/Acpi/S3SaveStateDxe/S3SaveStateDxe.inf
    MdeModulePkg/Universal/Acpi/BootScriptExecutorDxe/BootScriptExecutorDxe.inf
- !endif
 -  MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
 +# BGRT removed for stealth
-   OvmfPkg/WsmtDxe/WsmtDxe.inf
  
    #
+   # Hash2 Protocol producer
 diff --git a/OvmfPkg/OvmfPkgX64.fdf b/OvmfPkg/OvmfPkgX64.fdf
-index dd42cf0..c18a3ae 100644
 --- a/OvmfPkg/OvmfPkgX64.fdf
 +++ b/OvmfPkg/OvmfPkgX64.fdf
-@@ -265,13 +265,13 @@ INF  OvmfPkg/AcpiPlatformDxe/AcpiPlatformDxe.inf
- !if $(STANDALONE_MM_ENABLE) != TRUE
+@@ -318,13 +318,13 @@
+ INF  OvmfPkg/AcpiPlatformDxe/AcpiPlatformDxe.inf
+ INF  MdeModulePkg/Universal/Acpi/S3SaveStateDxe/S3SaveStateDxe.inf
  INF  MdeModulePkg/Universal/Acpi/BootScriptExecutorDxe/BootScriptExecutorDxe.inf
- !endif
 -INF  MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
 +# BGRT removed for stealth
  
@@ -54,10 +51,9 @@ index dd42cf0..c18a3ae 100644
  INF OvmfPkg/TdxDxe/TdxDxe.inf
  
 diff --git a/OvmfPkg/QemuVideoDxe/Driver.c b/OvmfPkg/QemuVideoDxe/Driver.c
-index 6feca83..623e07e 100644
 --- a/OvmfPkg/QemuVideoDxe/Driver.c
 +++ b/OvmfPkg/QemuVideoDxe/Driver.c
-@@ -41,10 +41,10 @@ QEMU_VIDEO_CARD  gQemuVideoCardList[] = {
+@@ -41,16 +41,16 @@
      L"Cirrus 5446"
    },{
      PCI_CLASS_DISPLAY_VGA,
@@ -70,4 +66,35 @@ index 6feca83..623e07e 100644
 +    L"AMD Radeon 780M"
    },{
      PCI_CLASS_DISPLAY_OTHER,
-     0x1234,
+-    0x1234,
+-    0x1111,
++    0x1002,
++    0x1900,
+     QEMU_VIDEO_BOCHS_MMIO,
+-    L"QEMU Standard VGA (secondary)"
++    L"AMD Radeon 780M (secondary)"
+   },{
+     PCI_CLASS_DISPLAY_VGA,
+     0x1b36,
+diff --git a/OvmfPkg/Include/Dsc/OvmfTpmComponentsDxe.dsc.inc b/OvmfPkg/Include/Dsc/OvmfTpmComponentsDxe.dsc.inc
+--- a/OvmfPkg/Include/Dsc/OvmfTpmComponentsDxe.dsc.inc
++++ b/OvmfPkg/Include/Dsc/OvmfTpmComponentsDxe.dsc.inc
+@@ -3,6 +3,7 @@
+ ##
+ 
+ !if $(TPM2_ENABLE) == TRUE
++  SecurityPkg/Tcg/Tcg2Acpi/Tcg2Acpi.inf
+   SecurityPkg/Tcg/Tcg2Dxe/Tcg2Dxe.inf {
+     <LibraryClasses>
+       Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibRouter/Tpm2DeviceLibRouterDxe.inf
+diff --git a/OvmfPkg/Include/Fdf/OvmfTpmDxe.fdf.inc b/OvmfPkg/Include/Fdf/OvmfTpmDxe.fdf.inc
+--- a/OvmfPkg/Include/Fdf/OvmfTpmDxe.fdf.inc
++++ b/OvmfPkg/Include/Fdf/OvmfTpmDxe.fdf.inc
+@@ -6,6 +6,7 @@
+ !if $(TPM1_ENABLE) == TRUE
+ INF  SecurityPkg/Tcg/TcgDxe/TcgDxe.inf
+ !endif
++INF  SecurityPkg/Tcg/Tcg2Acpi/Tcg2Acpi.inf
+ INF  SecurityPkg/Tcg/Tcg2Dxe/Tcg2Dxe.inf
+ INF  SecurityPkg/Tcg/Tcg2PlatformDxe/Tcg2PlatformDxe.inf
+ INF  SecurityPkg/Tcg/Tcg2Config/Tcg2ConfigDxe.inf

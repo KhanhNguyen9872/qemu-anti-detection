@@ -24,6 +24,7 @@ described below.
 | Audio | AMD HD Audio (1022:15e3) + Realtek ALC897 codec (10ec:0897) |
 | GPU | Radeon 780M PCI ID (1002:1900) — see the GPU limitation below |
 | Monitor | ASUS VA24EHE EDID, 1920x1080 |
+| Firmware | Secure Boot ON, TPM 2.0 (`swtpm`), GEEKOM PK/KEK |
 
 ## Main changes
 
@@ -39,6 +40,10 @@ described below.
   brand string "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics".
 - Machine: `vmport=off` disables the VMware backdoor I/O port emulation;
   `i8042=off` removes the PS/2 controller from the machine.
+- Secure Boot/TPM: OVMF is built with `SECURE_BOOT_ENABLE`, `SMM_REQUIRE`
+  and `TPM2_ENABLE`; `Tcg2Acpi` supplies the TPM2 ACPI table. The variable
+  store uses a GEEKOM PK/KEK plus Microsoft KEK/db/dbx. TPM 2.0 is provided
+  by `swtpm` on a `tpm-crb` device.
 - PCI: Q35 host bridge 1022:14e8, FCH LPC 1022:790e, FCH SATA 1022:7901,
   FCH SMBus 1022:790b, HD Audio 1022:15e3, xHCI 1022:15b9,
   VGA 1002:1900; AMD/Intel subsystem IDs.
@@ -88,7 +93,9 @@ cd edk2
 git apply /path/to/ovmf-stealth.patch
 source edksetup.sh
 make -C BaseTools -j"$(nproc)"
-build -a X64 -t GCC -p OvmfPkg/OvmfPkgX64.dsc -b RELEASE -D FD_SIZE_4MB -n"$(nproc)"
+build -a X64 -t GCC -p OvmfPkg/OvmfPkgX64.dsc -b RELEASE \
+  -D FD_SIZE_4MB=TRUE -D SECURE_BOOT_ENABLE=TRUE \
+  -D SMM_REQUIRE=TRUE -D TPM2_ENABLE=TRUE -n"$(nproc)"
 ```
 
 The resulting `OVMF_CODE.fd` / `OVMF_VARS.fd` are in
@@ -97,7 +104,14 @@ The resulting `OVMF_CODE.fd` / `OVMF_VARS.fd` are in
 `ovmf-stealth.patch`:
 - teaches OVMF that `1022:14e8` is the Q35 host bridge,
 - adds `1002:1900` to the QEMU video driver ID table,
-- removes the TianoCore BGRT table and boot logo.
+- removes the TianoCore BGRT table and boot logo,
+- adds `Tcg2Acpi` to the OVMF TPM component list so Windows sees
+  `ACPI\MSFT0101` and the TPM2 ACPI table.
+
+The prebuilt `firmware/OVMF_VARS_stealth.fd` has Secure Boot already enabled
+with `GEEKOM Secure Boot PK` / `GEEKOM Secure Boot KEK`, Microsoft KEK/db/dbx,
+and a Windows Boot Manager entry. It was generated offline with
+`virt-fw-vars`; the private keys are not distributed.
 
 ## Launch
 
@@ -108,6 +122,10 @@ overrides listed in `STEALTH.md`/the script.
 
 Set the preferred EDID refresh with `REFRESH=144 ./start-win10-stealth.sh`
 (the value is milliseconds in QEMU's EDID property: `refresh_rate=Hz * 1000`).
+
+TPM 2.0 is enabled by default. The script starts `swtpm` and passes
+`-device tpm-crb,tpmdev=tpm0`; use `TPM=0` only for debugging. Secure Boot is
+controlled by the `firmware/OVMF_VARS_stealth.fd` variable store.
 
 ### If Windows stops at 0xc0000225
 
@@ -142,6 +160,13 @@ Alternatively recreate `win10_VARS.fd` from
   MSAcpi_ThermalZoneTemperature` returns four zones:
   `TZ00` 3182, `TZ01` 3232, `TZ02` 3132, `TZ03` 3082 (tenths of Kelvin).
 - `Win32_CacheMemory` and the SMBIOS type 7/26-29 tables are present.
+- Secure Boot: `Confirm-SecureBootUEFI` is `True` (elevated) and
+  `HKLM\SYSTEM\CurrentControlSet\Control\SecureBoot\State\UEFISecureBootEnabled`
+  is `1`.
+- TPM: Device Manager has `Trusted Platform Module 2.0` (`ACPI\MSFT0101\1`);
+  `Get-Tpm` reports present/ready/enabled/activated, and `Win32_Tpm`
+  reports `SpecVersion = 2.0`. The `swtpm` emulator reports manufacturer
+  `IBM` (emulator property, not QEMU).
 - Old hardware ghost devices must be removed after switching an existing
   Windows installation (see `STEALTH.md`).
 

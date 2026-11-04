@@ -176,6 +176,9 @@ anti-detection profile on top of the original patch:
   (`Get-PhysicalDisk.MediaType = SSD`).
 - Display: ASUS VA24EHE EDID with a 50-240 Hz range; `REFRESH` selects the
   preferred timing (default 144 Hz). Actual >64 Hz needs VFIO GPU passthrough.
+- Secure Boot + TPM 2.0: patched OVMF with a GEEKOM PK/KEK and Microsoft
+  KEK/db/dbx; TPM 2.0 is provided by `swtpm` and exposed to Windows as
+  `Trusted Platform Module 2.0`.
 
 ### Tóm tắt tiếng Việt
 
@@ -190,5 +193,8 @@ anti-detection profile on top of the original patch:
 - Ổ Samsung 870 EVO hiện là SSD không quay (`MediaType = SSD`).
 - EDID ASUS VA24EHE dải 50-240 Hz; biến `REFRESH` chọn timing ưu tiên
   (mặc định 144 Hz). Muốn >64 Hz thực tế cần passthrough GPU.
+- Secure Boot + TPM 2.0: OVMF đã bật Secure Boot với PK/KEK GEEKOM và
+  Microsoft KEK/db/dbx; TPM 2.0 qua `swtpm`, Windows thấy
+  `Trusted Platform Module 2.0`.
 - **GPU**: `virtio-gpu` không chạy được driver AMD thật. Muốn có GPU thật phải
   passthrough VFIO một GPU rời; xem `GPU-PASSTHROUGH.md`.

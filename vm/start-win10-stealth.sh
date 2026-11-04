@@ -22,6 +22,31 @@ for f in "$QEMU_BIN" "$OVMF_CODE" "$DISK" "$VARS"; do
     [ -e "$f" ] || { echo "[!] Missing: $f" >&2; exit 1; }
 done
 
+TPM="${TPM:-1}"
+TPM_ARGS=()
+if [ "$TPM" = "1" ]; then
+    command -v swtpm >/dev/null 2>&1 || {
+        echo "[!] swtpm is required for TPM 2.0 (or set TPM=0)" >&2
+        exit 1
+    }
+    TPM_DIR="${TPM_DIR:-$DIR/tpm}"
+    mkdir -p "$TPM_DIR"
+    if [ -f "$TPM_DIR/swtpm.pid" ] && kill -0 "$(cat "$TPM_DIR/swtpm.pid")" 2>/dev/null; then
+        :
+    else
+        rm -f "$TPM_DIR/swtpm.sock" "$TPM_DIR/swtpm.pid"
+        swtpm socket --tpm2 --tpmstate dir="$TPM_DIR" \
+            --ctrl type=unixio,path="$TPM_DIR/swtpm.sock" \
+            --pid file="$TPM_DIR/swtpm.pid" --daemon \
+            --log file="$TPM_DIR/swtpm.log"
+    fi
+    TPM_ARGS=(
+        -chardev "socket,id=chrtpm,path=$TPM_DIR/swtpm.sock"
+        -tpmdev emulator,id=tpm0,chardev=chrtpm
+        -device tpm-crb,tpmdev=tpm0
+    )
+fi
+
 exec "$QEMU_BIN" \
   -enable-kvm \
   -machine q35,smm=on,smbios-entry-point-type=64,i8042=off,vmport=off \
@@ -60,5 +85,6 @@ model-id="AMD Ryzen 7 8845HS w/ Radeon 780M Graphics" \
   -smbios "type=11,value=SER8" \
   -smbios "type=11,value=Default string" \
   -smbios "type=17,loc_pfx=SODIMM,bank=BANK0,manufacturer=Samsung,serial=S0A1B2C3D4,asset=Default string,part=M425R1GB4BB0-CQKOL,speed=5600" \
+  "${TPM_ARGS[@]}" \
   -name "Windows 10 Pro" \
   -display gtk,gl=on

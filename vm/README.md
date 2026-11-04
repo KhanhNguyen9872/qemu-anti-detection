@@ -36,6 +36,16 @@ GPU passthrough (see `../STEALTH.md`).
 The guest exposes 4 ACPI thermal zones (`TZ00`-`TZ03`), 2 fans, 5 voltage
 probes, 4 temperature probes and 2 current probes through SMBIOS/ACPI.
 
+## Secure Boot and TPM 2.0
+
+`firmware/OVMF_CODE_stealth.fd` is built with Secure Boot, SMM and TPM 2.0
+support. `firmware/OVMF_VARS_stealth.fd` has Secure Boot enabled with a
+GEEKOM PK/KEK and Microsoft KEK/db/dbx.
+
+The launch script starts `swtpm` and adds `-device tpm-crb,tpmdev=tpm0` by
+default. Install `swtpm` first; use `TPM=0` to boot without TPM for debugging.
+The TPM state is kept in `./tpm`; deleting that directory clears the TPM.
+
 ## Shared folder (SMB)
 
 The launch scripts export `$DIR/share` to the guest through QEMU user-mode

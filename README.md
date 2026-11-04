@@ -190,7 +190,7 @@ Insert YOUR virtual machine's uuid.
 This fork adds a complete, buildable patched QEMU 10.2.2 tree and a stronger
 anti-detection profile on top of the original patch:
 
-- **Patched QEMU 10.2.2 source** — download the `qemu-10.2.2-stealth-source.tar.xz` asset from the [v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth).
+- **Patched QEMU 10.2.2 source** — apply `qemu-10.2.2.patch` then `qemu-10.2.2-acpi-stealth.patch` to a vanilla QEMU 10.2.2 tarball; both are in the [v10.2.2-stealth release](https://github.com/KhanhNguyen9872/qemu-anti-detection/releases/tag/v10.2.2-stealth).
 - `qemu-10.2.2.patch` — full patch against a vanilla QEMU 10.2.2 tarball.
 - `ovmf-stealth.patch` + `firmware/` — patched OVMF for the AMD host bridge,
   AMD VGA ID, and no TianoCore BGRT/logo.
@@ -206,6 +206,8 @@ anti-detection profile on top of the original patch:
 - Secure Boot + TPM 2.0: patched OVMF with a GEEKOM PK/KEK and Microsoft
   KEK/db/dbx; TPM 2.0 is provided by `swtpm` and exposed to Windows as
   `Trusted Platform Module 2.0`.
+- SEB profile: `ACCEL=tcg TPM=0` avoids KVM hypercall interception and the
+  OVMF measured-boot log; use KVM for normal work.
 - Portable CPU identity: fixed AMD CPUID with the 8845HS brand, not
   `-cpu host`; `CPU_MODE=auto` uses EPYC-Genoa on AMD and EPYC-Rome on Intel (with `-pcid,-la57` masked).
   `CPU_MODE=portable` uses EPYC-Rome on both; `CPU_MODEL` and `SMP` can
@@ -213,7 +215,7 @@ anti-detection profile on top of the original patch:
 
 ### Tóm tắt tiếng Việt
 
-- Source QEMU 10.2.2 đã patch đầy đủ nằm trong asset `qemu-10.2.2-stealth-source.tar.xz` của release `v10.2.2-stealth`.
+- Tải QEMU 10.2.2 gốc, áp `qemu-10.2.2.patch` rồi `qemu-10.2.2-acpi-stealth.patch` (cả hai nằm trong release `v10.2.2-stealth`).
 - File `qemu-10.2.2.patch` áp dụng trực tiếp lên QEMU 10.2.2 gốc.
 - OVMF cần patch riêng (`ovmf-stealth.patch`) vì QEMU đổi host bridge/VGA ID;
   bản build sẵn nằm trong `firmware/`.

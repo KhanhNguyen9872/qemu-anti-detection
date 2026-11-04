@@ -13,7 +13,11 @@
 4. Put the installed Windows disk at `win10.qcow2`.
 5. Run:
    ```bash
-   ./start-win10-stealth.sh
+   ./start-win10.sh
+   ```
+   If QEMU is not installed in `/usr/local/bin` yet:
+   ```bash
+   QEMU_BIN=/path/to/qemu-system-x86_64 ./start-win10.sh
    ```
 
 If Windows reports `0xc0000225` after moving or resizing the disk, the OVMF
@@ -53,13 +57,13 @@ DISK=win10.qcow2 VARS=win10_VARS.fd ISO=/path/Win10_22H2.iso \
 Normal use (KVM, TPM 2.0 on):
 
 ```bash
-./start-win10-stealth.sh
+./start-win10.sh
 ```
 
 Safe Exam Browser (TCG, no TPM to hide the OVMF measured-boot log):
 
 ```bash
-ACCEL=tcg TPM=0 ./start-win10-stealth.sh
+ACCEL=tcg TPM=0 ./start-win10.sh
 ```
 
 `ACCEL=tcg` defaults `TPM` to `0`; set `TPM=1` explicitly if you need TPM

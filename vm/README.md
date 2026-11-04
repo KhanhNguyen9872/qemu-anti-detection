@@ -50,8 +50,8 @@ The TPM state is kept in `./tpm`; deleting that directory clears the TPM.
 
 The default is **not** `-cpu host`. The launcher uses `CPU_MODE=auto`:
 
-- On an **AMD** host: fixed `EPYC-Genoa,family=25,model=117,stepping=2`
-- On an **Intel** or unknown host: fixed `EPYC-Rome,family=25,model=117,stepping=2`
+- On an **AMD** host: fixed `EPYC-Genoa,family=25,model=117,stepping=2,-pcid,-la57`
+- On an **Intel** or unknown host: fixed `EPYC-Rome,family=25,model=117,stepping=2,-pcid,-la57`
 
 Both use the `AMD Ryzen 7 8845HS w/ Radeon 780M Graphics` brand string, so
 Windows shows the same CPU name and an AuthenticAMD identity regardless of
@@ -60,7 +60,7 @@ the host CPU.
 Options:
 
 - `CPU_MODE=auto` (default) — Genoa on AMD, Rome on Intel.
-- `CPU_MODE=portable` — EPYC-Rome on both; best cross-vendor KVM
+- `CPU_MODE=portable` — EPYC-Rome on both with `-pcid,-la57`; best cross-vendor KVM
   compatibility, tested on the AMD host.
 - `CPU_MODE=compat` — `qemu64,family=25,model=117,stepping=2`; oldest
   baseline, last-resort for hosts where Rome still fails under KVM.
@@ -68,6 +68,10 @@ Options:
 - `CPU_MODEL='...'` — direct QEMU CPU model override.
 - `SMP='4,sockets=1,cores=4,threads=2'` — 4C/8T; default is 8C/8T.
   `SMP='2,sockets=1,cores=2,threads=2'` gives 2C/4T.
+
+The `-pcid,-la57` mask matches the 8845HS client feature set and suppresses
+the per-vCPU `host doesn't support requested feature` warnings on hosts
+without PCID/LA57.
 
 Important limitation: KVM can only expose CPU features the host supports.
 On Intel, QEMU filters AMD-only features such as SVM/AVX-512; the guest still
@@ -102,14 +106,17 @@ The launch scripts export `$DIR/share` to the guest through QEMU user-mode
 SMB. QEMU must be built with `--smbd=/usr/sbin/smbd` (or another path to the
 Samba `smbd` binary).
 
-In Windows, map it once:
+The host script only **exposes** the share; Windows does not auto-map a drive.
+Map it once from a guest command prompt:
 
 ```powershell
 net use Z: \\10.0.2.4\qemu /persistent:yes
 ```
 
 Files are then available under `Z:\` and in `/home/<user>/vms/share` on the
-host. Override the exported directory with `SMB_DIR=/path/to/share`.
+host. If the drive does not reconnect after a reboot, run
+`\\10.0.2.4\qemu\map-qemu-share.bat` (or copy it into the Windows Startup
+folder). Override the exported directory with `SMB_DIR=/path/to/share`.
 
 QEMU's user-mode SMB server is reachable at `10.0.2.4`; the share name is
 `qemu`.

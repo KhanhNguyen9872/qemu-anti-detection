@@ -180,7 +180,7 @@ anti-detection profile on top of the original patch:
   KEK/db/dbx; TPM 2.0 is provided by `swtpm` and exposed to Windows as
   `Trusted Platform Module 2.0`.
 - Portable CPU identity: fixed AMD CPUID with the 8845HS brand, not
-  `-cpu host`; `CPU_MODE=auto` uses EPYC-Genoa on AMD and EPYC-Rome on Intel.
+  `-cpu host`; `CPU_MODE=auto` uses EPYC-Genoa on AMD and EPYC-Rome on Intel (with `-pcid,-la57` masked).
   `CPU_MODE=portable` uses EPYC-Rome on both; `CPU_MODEL` and `SMP` can
   override the model/topology.
 

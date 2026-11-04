@@ -22,13 +22,13 @@ if [ -z "${CPU_MODEL:-}" ]; then
     case "$CPU_MODE" in
         auto)
             if [ "$HOST_VENDOR" = "AuthenticAMD" ]; then
-                CPU_MODEL="EPYC-Genoa,family=25,model=117,stepping=2"
+                CPU_MODEL="EPYC-Genoa,family=25,model=117,stepping=2,-pcid,-la57"
             else
-                CPU_MODEL="EPYC-Rome,family=25,model=117,stepping=2"
+                CPU_MODEL="EPYC-Rome,family=25,model=117,stepping=2,-pcid,-la57"
             fi
             ;;
         portable)
-            CPU_MODEL="EPYC-Rome,family=25,model=117,stepping=2"
+            CPU_MODEL="EPYC-Rome,family=25,model=117,stepping=2,-pcid,-la57"
             ;;
         compat)
             CPU_MODEL="qemu64,family=25,model=117,stepping=2"
@@ -78,7 +78,7 @@ if [ "$CPU_MODEL" = "host" ] && ! grep -qiE 'AMD Ryzen 7 8845H(S)?' /proc/cpuinf
     echo "[!] Host CPU is not Ryzen 7 8845H/8845HS." >&2
     echo "    CPUID will not match the GEEKOM A8 profile." >&2
     echo "    For a portable AMD identity use:" >&2
-    echo "    CPU_MODEL='EPYC-Genoa,family=25,model=117,stepping=2' $0" >&2
+    echo "    CPU_MODEL='EPYC-Genoa,family=25,model=117,stepping=2,-pcid,-la57' $0" >&2
 fi
 
 exec "$QEMU_BIN" \

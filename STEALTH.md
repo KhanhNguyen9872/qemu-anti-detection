@@ -37,8 +37,8 @@ described below.
   parallel/serial ports disabled by the launch profile.
 - CPUID: fixed AMD CPU model with brand string
   "AMD Ryzen 7 8845HS w/ Radeon 780M Graphics"; `CPU_MODE=auto` chooses
-  `EPYC-Genoa,family=25,model=117,stepping=2` on AMD and
-  `EPYC-Rome,family=25,model=117,stepping=2` on Intel. The default is
+  `EPYC-Genoa,family=25,model=117,stepping=2,-pcid,-la57` on AMD and
+  `EPYC-Rome,family=25,model=117,stepping=2,-pcid,-la57` on Intel. The default is
   **not** `-cpu host`, so the host CPUID vendor/model is not leaked. KVM
   paravirt leaves hidden (`kvm=off`), hypervisor bit cleared, all `kvm-*`
   paravirt features disabled, Hyper-V enlightenments disabled. On Intel,
